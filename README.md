@@ -1,28 +1,50 @@
-# Create T3 App
+# CS314-tradies
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## Authors:
 
-## What's next? How do I make an app with this?
+- Anh Quan Tran
+- Hue Minh Nguyen
+- Huu Khang Nguyen
+- Jesse Fairbanks
+- Matthew Payne
+- Shaharyar Asim
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Dependencies:
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- Node
+- Yarn
+- Docker
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Running the app:
 
-## Learn More
+### Copy and set the environment variables:
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+```bash
+> cp .env.sample .env
+```
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+### Install dependencies:
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+```bash
+> yarn install
+```
 
-## How do I deploy this?
+### Running the app:
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+- Starting the database through docker compose
+
+```bash
+> docker compose up
+```
+
+- Run database migration
+
+```bash
+> yarn prisma db push
+```
+
+- Running the app
+
+```bash
+> yarn dev
+```
