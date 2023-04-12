@@ -1,8 +1,8 @@
 import styles from "./index.module.css";
 import { type NextPage } from "next";
-
 import { signIn, signOut, useSession } from "next-auth/react";
-
+import { useCallback, useEffect, useMemo } from "react";
+import useAdminCheck from "@/hooks/useAdminCheck";
 import { api } from "@/utils/api";
 
 const Home: NextPage = () => {
@@ -22,8 +22,16 @@ const AuthShowcase: React.FC = () => {
 
   const { data: secretMessage } = api.example.getSecretMessage.useQuery(
     undefined, // no input
-    { enabled: sessionData?.user !== undefined },
+    { enabled: sessionData?.user !== undefined }
   );
+
+  const isAdmin = useAdminCheck();
+
+  useEffect(() => {
+    if (isAdmin) {
+      location.href = "/admin";
+    }
+  }, [isAdmin]);
 
   return (
     <div className={styles.authContainer}>
