@@ -7,17 +7,25 @@ import { ChakraProvider } from "@chakra-ui/react";
 import customTheme from "@/theme";
 import "@fontsource/rubik";
 import "@/styles/globals.css";
+import Head from "next/head";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <SessionProvider session={session}>
-      <ChakraProvider theme={customTheme}>
-        <Component {...pageProps} />
-      </ChakraProvider>
-    </SessionProvider>
+    <>
+      <Head>
+        <title>Tradies Connect</title>
+        <meta name="description" content="CS314 assignment" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <SessionProvider session={session}>
+        <ChakraProvider theme={customTheme}>
+          <Component {...pageProps} />
+        </ChakraProvider>
+      </SessionProvider>
+    </>
   );
 };
 
