@@ -1,13 +1,33 @@
 import { type ChakraTheme, extendTheme } from "@chakra-ui/react";
 
+const components: ChakraTheme["components"] = {
+  Button: {
+    variants: {
+      primary: {
+        bg: "button.primary",
+        color: "white",
+        fontSize: "sm",
+        fontWeight: "medium",
+      },
+      secondary: {
+        bg: "white",
+        borderColor: "blue.02",
+        borderWidth: 1,
+        color: "text.primary",
+        fontSize: "sm",
+        fontWeight: "medium",
+      },
+    },
+  },
+};
 const colors: ChakraTheme["colors"] = {
   blue: {
-    100: "#EAEEFF",
-    200: "#C9D4FF",
-    300: "#B7C5FF",
-    400: "#94A9FF",
-    500: "#708CFF",
-    600: "#4C6FFF", // primary
+    "01": "#EAEEFF",
+    "02": "#C9D4FF",
+    "03": "#B7C5FF",
+    "04": "#94A9FF",
+    "05": "#708CFF",
+    primary: "#4C6FFF",
   },
   background: {
     gray: "#F4F5FB",
@@ -48,10 +68,16 @@ const fontSizes: ChakraTheme["fontSizes"] = {
   xxl: "28px",
 };
 
-const fontWeight: ChakraTheme["fontWeight"] = {
+const fontWeights: ChakraTheme["fontWeights"] = {
   regular: 400,
   medium: 500,
   semibold: 600,
 };
-const customTheme = extendTheme({ colors, fonts, fontSizes, fontWeight });
+const customTheme = extendTheme({
+  components,
+  colors,
+  fonts,
+  fontSizes,
+  fontWeights,
+});
 export default customTheme;
