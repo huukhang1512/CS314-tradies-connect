@@ -23,7 +23,7 @@ const Home: NextPage = () => {
 export default Home;
 
 const AuthShowcase: React.FC = () => {
-  const { data: sessionData } = useSession();
+  const { data: sessionData, status } = useSession();
 
   const { data: secretMessage } = api.example.getSecretMessage.useQuery(
     undefined, // no input
@@ -41,7 +41,8 @@ const AuthShowcase: React.FC = () => {
         {secretMessage && <Text as={"span"}> - {secretMessage}</Text>}
       </Text>
       <Button
-        variant={"primary"}
+        variant={"secondary"}
+        isLoading={status === "loading"}
         onClick={sessionData ? () => void signOut() : () => void signIn()}
       >
         {sessionData ? "Sign out" : "Sign in"}

@@ -2,20 +2,18 @@ import { type ChakraTheme, extendTheme } from "@chakra-ui/react";
 
 const components: ChakraTheme["components"] = {
   Button: {
+    baseStyle: {
+      fontSize: "sm",
+      fontWeight: "medium",
+    },
     variants: {
       primary: {
         bg: "button.primary",
         color: "white",
-        fontSize: "sm",
-        fontWeight: "medium",
       },
       secondary: {
-        bg: "white",
-        borderColor: "blue.02",
-        borderWidth: 1,
-        color: "text.primary",
-        fontSize: "sm",
-        fontWeight: "medium",
+        bg: "button.secondary",
+        color: "blue.primary",
       },
     },
   },
@@ -65,7 +63,7 @@ const fontSizes: ChakraTheme["fontSizes"] = {
   md: "16px",
   lg: "20px",
   xl: "24px",
-  xxl: "28px",
+  "2xl": "28px",
 };
 
 const fontWeights: ChakraTheme["fontWeights"] = {
