@@ -54,7 +54,7 @@ const Home = ({
                   variant={"primary"}
                   w={"full"}
                   onClick={() =>
-                    void signIn("google", {
+                    void signIn(provider.id, {
                       callbackUrl: `${window.location.origin}/app`,
                     })
                   }
