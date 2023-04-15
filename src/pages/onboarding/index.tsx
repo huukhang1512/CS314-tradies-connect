@@ -1,4 +1,4 @@
 const Onboarding = () => {
-  return <></>;
+  return <>Onboarding Page</>;
 };
 export default Onboarding;
