@@ -11,6 +11,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { signOut, useSession } from "next-auth/react";
+import Link from "next/link";
 
 const AppBar = () => {
   const { data } = useSession();
@@ -18,13 +19,16 @@ const AppBar = () => {
     <HStack
       position={"absolute"}
       w={"full"}
+      top={0}
       p={5}
       justify={"space-between"}
       align={"center"}
     >
-      <Heading fontSize={"xl"} alignSelf={"flex-start"} color="text.primary ">
-        Tradies connect
-      </Heading>
+      <Link href="/app">
+        <Heading fontSize={"xl"} alignSelf={"flex-start"} color="text.primary">
+          Tradies connect
+        </Heading>
+      </Link>
       {data && (
         <HStack spacing={3}>
           <Menu>
