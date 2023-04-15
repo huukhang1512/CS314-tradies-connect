@@ -1,5 +1,5 @@
-import { type NextPage } from "next";
-import { signIn, useSession } from "next-auth/react";
+import { type InferGetServerSidePropsType } from "next";
+import { getProviders, signIn, useSession } from "next-auth/react";
 import {
   Button,
   Heading,
@@ -11,7 +11,9 @@ import {
 } from "@chakra-ui/react";
 import Link from "next/link";
 
-const Home: NextPage = () => {
+const Home = ({
+  providers,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { data: sessionData } = useSession();
   return (
     <SimpleGrid bg={"background.gray"} h={"full"} w={"full"} columns={7}>
@@ -46,23 +48,33 @@ const Home: NextPage = () => {
                 Open Tradies Connect
               </Button>
             ) : (
-              <Button
-                variant={"primary"}
-                w={"full"}
-                onClick={() =>
-                  void signIn("google", {
-                    callbackUrl: `${window.location.origin}/app`,
-                  })
-                }
-              >
-                Continue with Google
-              </Button>
+              Object.values(providers).map((provider) => (
+                <Button
+                  key={provider.id}
+                  variant={"primary"}
+                  w={"full"}
+                  onClick={() =>
+                    void signIn("google", {
+                      callbackUrl: `${window.location.origin}/app`,
+                    })
+                  }
+                >
+                  Continue with {provider.name}
+                </Button>
+              ))
             )}
           </VStack>
         </VStack>
       </GridItem>
     </SimpleGrid>
   );
+};
+
+export const getServerSideProps = async () => {
+  const providers = await getProviders();
+  return {
+    props: { providers: providers ?? [] },
+  };
 };
 
 export default Home;
