@@ -41,7 +41,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-.vscode
-
 # postgresql volumes
 /volumes
