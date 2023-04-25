@@ -1,5 +1,4 @@
 import styles from "./index.module.css";
-import { type NextPage } from "next";
 import { signIn, signOut, useSession } from "next-auth/react";
 import useAdminCheck from "@/hooks/useAdminCheck";
 import { api } from "@/utils/api";
@@ -7,10 +6,22 @@ import { useRouter } from "next/router";
 
 const Home: NextPage = () => {
 
+const Home = () => {
+  const { data } = useSession();
   return (
-    <>
-      <AuthShowcase />
-    </>
+    <button
+      className={styles.loginButton}
+      onClick={
+        data
+          ? () => void signOut()
+          : () =>
+              void signIn("google", {
+                callbackUrl: `${window.location.href}/app`,
+              })
+      }
+    >
+      {data ? "Sign out" : "Sign in"}
+    </button>
   );
 };
 
