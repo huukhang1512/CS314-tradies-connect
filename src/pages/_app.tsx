@@ -1,9 +1,12 @@
 import { type AppType } from "next/app";
+import Head from "next/head";
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
-
 import { api } from "@/utils/api";
 
+import { ChakraProvider } from "@chakra-ui/react";
+import customTheme from "@/theme";
+import "@fontsource/rubik";
 import "@/styles/globals.css";
 
 const MyApp: AppType<{ session: Session | null }> = ({
@@ -11,9 +14,18 @@ const MyApp: AppType<{ session: Session | null }> = ({
   pageProps: { session, ...pageProps },
 }) => {
   return (
-    <SessionProvider session={session}>
-      <Component {...pageProps} />
-    </SessionProvider>
+    <>
+      <Head>
+        <title>Tradies Connect</title>
+        <meta name="description" content="CS314 assignment" />
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <SessionProvider session={session}>
+        <ChakraProvider theme={customTheme}>
+          <Component {...pageProps} />
+        </ChakraProvider>
+      </SessionProvider>
+    </>
   );
 };
 
