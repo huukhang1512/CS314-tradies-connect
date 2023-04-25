@@ -1,12 +1,11 @@
 import styles from "./index.module.css";
 import { type NextPage } from "next";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { useCallback, useEffect, useMemo } from "react";
 import useAdminCheck from "@/hooks/useAdminCheck";
 import { api } from "@/utils/api";
+import { useRouter } from "next/router";
 
 const Home: NextPage = () => {
-  const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
   return (
     <>
@@ -26,12 +25,12 @@ const AuthShowcase: React.FC = () => {
   );
 
   const isAdmin = useAdminCheck();
+  const router = useRouter();
 
-  useEffect(() => {
-    if (isAdmin) {
-      location.href = "/admin";
-    }
-  }, [isAdmin]);
+  if (isAdmin) {
+    void router.replace("/admin");
+  }
+
 
   return (
     <div className={styles.authContainer}>
