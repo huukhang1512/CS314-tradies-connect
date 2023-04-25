@@ -15,6 +15,7 @@ const Home = ({
   providers,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   const { data: sessionData } = useSession();
+
   return (
     <SimpleGrid bg={"background.gray"} h={"full"} w={"full"} columns={7}>
       <GridItem
