@@ -140,7 +140,7 @@ const SidebarContent = ({
       h="full"
       {...rest}
     >
-      <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
+      <Flex h="20" alignItems="center" p={5} justifyContent="space-between">
         <Link href="/app">
           <Heading
             fontSize={"xl"}
@@ -252,7 +252,6 @@ const MobileNav = ({ onOpen, currPage, portal, ...rest }: MobileProps) => {
         w={{ base: "100%" }}
         display={{ base: "flex" }}
         fontSize="2xl"
-        fontFamily="monospace"
         ml={{ base: "4", md: "6" }}
         fontWeight="bold"
       >
