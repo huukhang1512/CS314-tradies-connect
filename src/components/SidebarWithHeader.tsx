@@ -7,7 +7,6 @@ import {
   HStack,
   Icon,
   useColorModeValue,
-  Link,
   Drawer,
   DrawerContent,
   Text,
@@ -16,6 +15,7 @@ import {
   type FlexProps,
   Heading,
 } from "@chakra-ui/react";
+import Link from "next/link";
 import { FiMenu, FiBell } from "react-icons/fi";
 import { AiOutlineFileDone } from "react-icons/ai";
 import { IoWalletOutline } from "react-icons/io5";
@@ -35,7 +35,7 @@ interface LinkItemProps {
   component?: ReactNode;
 }
 
-const AdminLinkItems: Array<LinkItemProps> = [
+const AdminLinkItems: LinkItemProps[] = [
   { name: "User Management", icon: HiOutlineUserGroup },
   { name: "Request Management", icon: HiOutlineClipboardList },
   { name: "Payment Management", icon: IoWalletOutline },
@@ -43,14 +43,14 @@ const AdminLinkItems: Array<LinkItemProps> = [
   { name: "Membership Management", icon: MdCardMembership },
 ];
 
-const TradieLinkItems: Array<LinkItemProps> = [
+const TradieLinkItems: LinkItemProps[] = [
   { name: "Available Requests", icon: HiOutlineGlobeAlt },
   { name: "My proposal list", icon: HiOutlineClipboardList },
   { name: "Subcriptions", icon: BiBadgeCheck },
   { name: "My payment", icon: IoWalletOutline },
 ];
 
-const ClientLinkItems: Array<LinkItemProps> = [
+const ClientLinkItems: LinkItemProps[] = [
   { name: "My request list", icon: AiOutlineFileDone },
   { name: "Subcriptions", icon: BiBadgeCheck },
   { name: "My payment", icon: IoWalletOutline },
@@ -62,7 +62,7 @@ export enum Portal {
   CLIENT = "client",
 }
 
-const LinkItemsList: Record<Portal, Array<LinkItemProps>> = {
+const LinkItemsList: Record<Portal, LinkItemProps[]> = {
   [Portal.ADMIN]: AdminLinkItems,
   [Portal.TRADIE]: TradieLinkItems,
   [Portal.CLIENT]: ClientLinkItems,
@@ -81,7 +81,7 @@ export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
   return (
     <Box minH="100vh" w="100vw" bg={useColorModeValue("gray.100", "gray.900")}>
       <SidebarContent
-        onClose={() => onClose}
+        onClose={onClose}
         display={{ base: "none", md: "block" }}
         currPage={currPage}
         portal={portal}
@@ -141,17 +141,15 @@ const SidebarContent = ({
       {...rest}
     >
       <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
-        <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
-          <Link href="/app">
-            <Heading
-              fontSize={"xl"}
-              alignSelf={"flex-start"}
-              color="text.primary"
-            >
-              Tradies connect
-            </Heading>
-          </Link>
-        </Text>
+        <Link href="/app">
+          <Heading
+            fontSize={"xl"}
+            alignSelf={"flex-start"}
+            color="text.primary"
+          >
+            Tradies connect
+          </Heading>
+        </Link>
         <CloseButton display={{ base: "flex", md: "none" }} onClick={onClose} />
       </Flex>
       {LinkItems.map((link: LinkItemProps, i: number) => (
@@ -191,11 +189,7 @@ const NavItem = ({
       : {};
 
   return (
-    <Link
-      href="#"
-      style={{ textDecoration: "none" }}
-      _focus={{ boxShadow: "none" }}
-    >
+    <Link href="#">
       <Flex
         sx={style}
         align="center"
