@@ -1,21 +1,33 @@
-import { type NextPage } from "next";
-import { signOut } from "next-auth/react";
-import useAdminCheck from "@/hooks/useAdminCheck";
-import Page403 from "../403";
-import { api } from "@/utils/api";
+import { GetServerSidePropsContext } from "next";
+import SidebarWithHeader from "@/components/SidebarWithHeader";
+import { Portal } from "@/components/SidebarWithHeader";
+import { Role } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/server/auth";
 
-const AdminHome: NextPage = () => {
-  const isAdmin = useAdminCheck();
-  const admin = api.example.admin.useQuery();
-
-  if (!isAdmin) return <Page403 />;
+const Admin = () => {
   return (
     <>
-      <h1>You logged in as an admin!</h1>
-      <p>Secret message: {admin.data}</p>
-      <button onClick={() => void signOut()}>Sign out</button>
+      <SidebarWithHeader portal={Portal.ADMIN}>
+      </SidebarWithHeader>
     </>
   );
 };
 
-export default AdminHome;
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const session = await getServerSession(context.req, context.res, authOptions);
+  if (session?.user.role !== Role.ADMIN) {
+    return { redirect: { destination: "/403" } };
+  }
+  // If the user is not logged in, redirect.
+  if (!session) {
+    return { redirect: { destination: "/" } };
+  }
+  return {
+    props: { session },
+  };
+};
+
+export default Admin;
