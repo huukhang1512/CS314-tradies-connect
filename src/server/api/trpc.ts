@@ -19,6 +19,7 @@ import { type Session } from "next-auth";
 
 import { getServerAuthSession } from "@/server/auth";
 import { prisma } from "@/server/db";
+import { OpenApiMeta } from 'trpc-openapi'
 
 type CreateContextOptions = {
   session: Session | null;
@@ -70,7 +71,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 import { Role } from "@prisma/client";
 
-const t = initTRPC.context<typeof createTRPCContext>().create({
+const t = initTRPC.context<typeof createTRPCContext>().meta<OpenApiMeta>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
     return {

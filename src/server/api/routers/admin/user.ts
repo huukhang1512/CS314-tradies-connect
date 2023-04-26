@@ -8,11 +8,31 @@ const PaginatedQueryInput = z.object({
   perPage: z.number().positive().default(10),
 });
 
+const PaginatedQueryOutput = z.object({
+  total: z.number().positive(),
+  page: z.number().positive(),
+  perPage: z.number().positive(),
+  users: z.array(
+    z.object({
+      id: z.string(),
+      email: z.string().nullable(),
+    })
+  ),
+});
+
 export const userRouter = createTRPCRouter({
-  getUsers: adminProcedure.input(PaginatedQueryInput).query(async (req) => {
+  getUsers: adminProcedure
+  .meta({ openapi: { method: 'GET', path: '/admin/users' } })
+  .input(PaginatedQueryInput)
+  .output(PaginatedQueryOutput)
+  .query(async (req) => {
     const users = await prisma.user.findMany({
       skip: (req.input.page - 1) * req.input.perPage,
       take: req.input.perPage,
+      select: {
+        id: true,
+        email: true,
+      },
       where: {
         role: {
           not: Role.ADMIN,
@@ -32,5 +52,6 @@ export const userRouter = createTRPCRouter({
       perPage: req.input.perPage,
       users,
     };
-  }),
+  })
+  ,
 });
