@@ -14,6 +14,7 @@ import {
   type BoxProps,
   type FlexProps,
   Heading,
+  VStack,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { FiMenu, FiBell } from "react-icons/fi";
@@ -152,17 +153,19 @@ const SidebarContent = ({
         </Link>
         <CloseButton display={{ base: "flex", md: "none" }} onClick={onClose} />
       </Flex>
-      {LinkItems.map((link: LinkItemProps, i: number) => (
-        <NavItem
-          key={link.name}
-          icon={link.icon}
-          onClick={() => setCurrPage(i)}
-          index={i}
-          currPage={currPage}
-        >
-          {link.name}
-        </NavItem>
-      ))}
+      <VStack px={5}>
+        {LinkItems.map((link: LinkItemProps, i: number) => (
+          <NavItem
+            key={link.name}
+            icon={link.icon}
+            onClick={() => setCurrPage(i)}
+            index={i}
+            currPage={currPage}
+          >
+            {link.name}
+          </NavItem>
+        ))}
+      </VStack>
     </Box>
   );
 };
@@ -189,34 +192,35 @@ const NavItem = ({
       : {};
 
   return (
-    <Link href="#">
-      <Flex
-        sx={style}
-        align="center"
-        p="4"
-        mx="4"
-        borderRadius="lg"
-        role="group"
-        cursor="pointer"
-        _hover={{
-          bg: "blue.01",
-          color: "blue.primary",
-        }}
-        {...rest}
-      >
-        {icon && (
-          <Icon
-            mr="4"
-            fontSize="16"
-            _groupHover={{
-              color: "blue.primary",
-            }}
-            as={icon}
-          />
-        )}
-        {children}
-      </Flex>
-    </Link>
+    <Flex
+      as={Link}
+      href="#"
+      sx={style}
+      align="center"
+      w={"full"}
+      p="4"
+      mx="4"
+      borderRadius="lg"
+      role="group"
+      cursor="pointer"
+      _hover={{
+        bg: "blue.01",
+        color: "blue.primary",
+      }}
+      {...rest}
+    >
+      {icon && (
+        <Icon
+          mr="4"
+          fontSize="16"
+          _groupHover={{
+            color: "blue.primary",
+          }}
+          as={icon}
+        />
+      )}
+      {children}
+    </Flex>
   );
 };
 
