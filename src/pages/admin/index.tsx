@@ -1,4 +1,4 @@
-import { GetServerSidePropsContext } from "next";
+import { type GetServerSidePropsContext } from "next";
 import SidebarWithHeader from "@/components/SidebarWithHeader";
 import { Portal } from "@/components/SidebarWithHeader";
 import { Role } from "@prisma/client";

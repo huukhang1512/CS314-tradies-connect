@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from "react";
+import React, { type ReactNode, useState } from "react";
 import {
   IconButton,
   Box,
@@ -12,14 +12,14 @@ import {
   DrawerContent,
   Text,
   useDisclosure,
-  BoxProps,
-  FlexProps,
+  type BoxProps,
+  type FlexProps,
   Heading,
 } from "@chakra-ui/react";
 import { FiMenu, FiBell } from "react-icons/fi";
 import { AiOutlineFileDone } from "react-icons/ai";
 import { IoWalletOutline } from "react-icons/io5";
-import { IconType } from "react-icons";
+import { type IconType } from "react-icons";
 import { BiBadgeCheck } from "react-icons/bi";
 import {
   HiOutlineUserGroup,
@@ -128,7 +128,7 @@ const SidebarContent = ({
   setCurrPage,
   ...rest
 }: SidebarProps) => {
-  let LinkItems = LinkItemsList[portal];
+  const LinkItems = LinkItemsList[portal];
   return (
     <Box
       transition="3s ease"
@@ -182,7 +182,7 @@ const NavItem = ({
   currPage,
   ...rest
 }: NavItemProps) => {
-  let style =
+  const style =
     index === currPage
       ? {
           bg: "blue.01",
@@ -232,7 +232,7 @@ interface MobileProps extends FlexProps {
   portal: Portal;
 }
 const MobileNav = ({ onOpen, currPage, portal, ...rest }: MobileProps) => {
-  let LinkItems = LinkItemsList[portal];
+  const LinkItems = LinkItemsList[portal];
 
   return (
     <Flex
@@ -262,7 +262,7 @@ const MobileNav = ({ onOpen, currPage, portal, ...rest }: MobileProps) => {
         ml={{ base: "4", md: "6" }}
         fontWeight="bold"
       >
-        {LinkItems[currPage]!.name}
+        {LinkItems[currPage]?.name}
       </Text>
 
       <HStack spacing={{ base: "0", md: "6" }}>

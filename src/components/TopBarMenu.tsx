@@ -6,12 +6,12 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 
-export type TopBarMenuProps = {};
+export interface TopBarMenuProps {}
 
 import { signOut } from "next-auth/react";
 import AvatarMenuButton from "./AvatarMenuButton";
 
-const TopBarMenu = (props: TopBarMenuProps) => {
+const TopBarMenu = (_props: TopBarMenuProps) => {
   return (
     <Menu>
       <AvatarMenuButton />
@@ -22,7 +22,7 @@ const TopBarMenu = (props: TopBarMenuProps) => {
         <MenuItem>Profile</MenuItem>
         <MenuItem>Settings</MenuItem>
         <MenuDivider />
-        <MenuItem onClick={() => signOut()}>Sign out</MenuItem>
+        <MenuItem onClick={() => void signOut()}>Sign out</MenuItem>
       </MenuList>
     </Menu>
   );

@@ -2,8 +2,8 @@ import { Avatar, Button, MenuButton, Text } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { useSession } from "next-auth/react";
 
-export type AvatarMenuButtonProps = {};
-const AvatarMenuButton = (props: AvatarMenuButtonProps) => {
+export interface AvatarMenuButtonProps {}
+const AvatarMenuButton = (_props: AvatarMenuButtonProps) => {
   const { data } = useSession();
   if (!data) return <></>;
   return (
