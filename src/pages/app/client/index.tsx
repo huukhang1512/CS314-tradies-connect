@@ -1,11 +1,13 @@
-import { type NextPage } from "next";
+import SidebarWithHeader from "@/components/SidebarWithHeader";
+import { Portal } from "@/components/SidebarWithHeader";
+import { getServerSideProps as redirect } from "@/pages/app";
+export const getServerSideProps = redirect;
 
-const ClientHome: NextPage = () => {
+const Client = () => {
   return (
     <>
-      <h1>Client Home</h1>
+      <SidebarWithHeader portal={Portal.CLIENT}></SidebarWithHeader>
     </>
   );
 };
-
-export default ClientHome;
+export default Client;

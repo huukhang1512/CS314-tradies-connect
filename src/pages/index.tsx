@@ -19,6 +19,7 @@ const Home = ({
   return (
     <SimpleGrid bg={"background.gray"} h={"full"} w={"full"} columns={7}>
       <GridItem
+        display={{ base: "hidden", md: "flex" }}
         colSpan={3}
         backgroundImage={
           "url('https://images.pexels.com/photos/1115804/pexels-photo-1115804.jpeg')"
