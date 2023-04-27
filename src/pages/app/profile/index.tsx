@@ -17,11 +17,26 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import profileCoverPhoto from "@/assets/profileCoverPhoto.jpg";
+import { AsyncSelect } from "chakra-react-select";
 import { useSession } from "next-auth/react";
+import { api } from "@/utils/api";
 
 const Profile = () => {
-  const { data } = useSession();
-  if (!data) return <></>;
+  const { data: sessionData } = useSession();
+  const { data: services } = api.tradie.service.getServices.useQuery();
+
+  const { mutateAsync: getServicesByName } =
+    api.tradie.service.getServicesByName.useMutation();
+
+  const searchServices = async (inputValue: string) => {
+    const filteredServices = await getServicesByName(inputValue);
+    return filteredServices.map((service) => ({
+      value: service.name,
+      label: service.name,
+    }));
+  };
+
+  if (!services || !sessionData) return <></>;
   return (
     <SidebarWithHeader portal={Portal.PROFILE}>
       <VStack bg={"white"} rounded={"md"}>
@@ -49,15 +64,19 @@ const Profile = () => {
                   w={150}
                   h={150}
                   display={{ base: "none", md: "flex" }}
-                  src={data.user.image || undefined}
-                  title={data.user.name || undefined}
+                  src={sessionData.user.image || undefined}
+                  title={sessionData.user.name || undefined}
                 />
               </Circle>
               <VStack align={"flex-start"}>
-                <Heading size={"lg"}>{data.user.name}</Heading>
+                <Heading size={"lg"}>{sessionData.user.name}</Heading>
                 <HStack spacing={5}>
                   <Text color={"text.secondary"}>Customer</Text>
-                  <Divider bg={"background.gray"} orientation="vertical" />
+                  <Divider
+                    color={"background.gray"}
+                    h={5}
+                    orientation="vertical"
+                  />
                   <Text color={"text.secondary"}>
                     Premium plan (Start date: 10/03/2023)
                   </Text>
@@ -80,7 +99,7 @@ const Profile = () => {
                 bg={"background.gray"}
                 borderColor={"text.disable"}
                 borderWidth={1}
-                value={data.user.email || ""}
+                value={sessionData.user.email || ""}
                 isReadOnly
               />
             </FormControl>
@@ -93,7 +112,7 @@ const Profile = () => {
                 bg={"background.gray"}
                 borderColor={"text.disable"}
                 borderWidth={1}
-                value={data.user.name || ""}
+                value={sessionData.user.name || ""}
               />
             </FormControl>
           </GridItem>
@@ -101,13 +120,13 @@ const Profile = () => {
             {/* TODO(khang): make this field readonly if user isn't register as tradies */}
             <FormControl>
               <FormLabel>Provided Services</FormLabel>
-              <Input
-                variant={"filled"}
-                bg={"background.gray"}
-                borderColor={"text.disable"}
-                borderWidth={1}
-                value={data.user.email || ""}
-                isReadOnly
+              <AsyncSelect
+                isMulti
+                loadOptions={searchServices}
+                defaultOptions={services.map((service) => ({
+                  label: service.name,
+                  value: service.name,
+                }))}
               />
             </FormControl>
           </GridItem>
