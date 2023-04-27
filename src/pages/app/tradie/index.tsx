@@ -1,9 +1,6 @@
 import SidebarWithHeader from "@/components/SidebarWithHeader";
 import { Portal } from "@/components/SidebarWithHeader";
-import { getServerSideProps as redirect } from "@/pages/app";
 import { api } from "@/utils/api";
-
-export const getServerSideProps = redirect;
 
 const Tradie = () => {
   const serviceMutation = api.services.chooseServices.useMutation();
@@ -18,4 +15,6 @@ const Tradie = () => {
     </SidebarWithHeader>
   );
 };
+
 export default Tradie;
+export { getServerSidePropsWithAuth as getServerSideProps } from "@/components/getServerSidePropsWithAuth";
