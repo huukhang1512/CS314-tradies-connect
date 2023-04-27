@@ -16,9 +16,13 @@ const PaginatedQueryOutput = z.object({
     z.object({
       id: z.string(),
       email: z.string().nullable(),
+      name: z.string().nullable(),
     })
-  ),
-});
+    ),
+  });
+  
+export type PaginatedQueryInputType = z.infer<typeof PaginatedQueryInput>
+export type PaginatedQueryOutputType = z.infer<typeof PaginatedQueryOutput>
 
 export const userRouter = createTRPCRouter({
   getUsers: adminProcedure
@@ -32,6 +36,7 @@ export const userRouter = createTRPCRouter({
       select: {
         id: true,
         email: true,
+        name: true,
       },
       where: {
         role: {
@@ -50,7 +55,7 @@ export const userRouter = createTRPCRouter({
       total: count,
       page: req.input.page,
       perPage: req.input.perPage,
-      users,
+      data: users,
     };
   })
   ,
