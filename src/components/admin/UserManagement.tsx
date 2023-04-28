@@ -6,7 +6,7 @@ export interface UserManagementProps {
 }
 
 const UserManagement = (_props: UserManagementProps) => {
-  const {refetch} = api.admin.users.getUsers.useQuery({});
+  const {refetch} = api.users.getUsers.useQuery({});
   const getData = async (page = 1, perPage = 10) => {
     const {data} = await refetch({page, perPage});
     return data;
