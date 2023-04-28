@@ -6,9 +6,9 @@ import { api } from "@/utils/api";
 export const getServerSideProps = redirect;
 
 const Tradie = () => {
-  const serviceMutation = api.service.chooseServices.useMutation();
+  const serviceMutation = api.services.chooseServices.useMutation();
   const setServices = () => {
-    serviceMutation.mutate(["Tree Pruning"]);
+    serviceMutation.mutate({services: ["Tree Pruning"]});
     console.log(serviceMutation.data);
   };
   return (

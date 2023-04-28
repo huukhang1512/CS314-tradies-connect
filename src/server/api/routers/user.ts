@@ -7,7 +7,7 @@ import {
 } from "@/server/api/trpc";
 import { Role } from "@prisma/client";
 
-const User = z.object({
+export const User = z.object({
   id: z.string(),
   email: z.string().nullable(),
   name: z.string().nullable(),
@@ -44,7 +44,7 @@ export type PaginatedQueryOutputType = z.infer<typeof PaginatedGetUsersOutput>;
 
 export const userRouter = createTRPCRouter({
   getUsers: adminProcedure
-    .meta({ openapi: { method: "GET", path: "/admin/users" } })
+    .meta({ openapi: { method: "GET", path: "/users" } })
     .input(PaginatedGetUsersInput)
     .output(PaginatedGetUsersOutput)
     .mutation(async (req) => {
@@ -77,7 +77,7 @@ export const userRouter = createTRPCRouter({
       };
     }),
   getUser: protectedProcedure
-    .meta({ openapi: { method: "GET", path: "/admin/users/:id" } })
+    .meta({ openapi: { method: "GET", path: "/users/:id" } })
     .input(GetUserInput)
     .output(GetUserOutput)
     .query(async (req) => {
@@ -97,7 +97,7 @@ export const userRouter = createTRPCRouter({
       return { data: user };
     }),
   updateUser: adminProcedure
-    .meta({ openapi: { method: "PUT", path: "/admin/users/:id" } })
+    .meta({ openapi: { method: "PUT", path: "/users/:id" } })
     .input(UpdateUserInput)
     .output(UpdateUserOutput)
     .mutation(async (req) => {
