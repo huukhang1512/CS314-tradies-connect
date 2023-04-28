@@ -42,9 +42,9 @@ model Session {
 }
 
 model User {
-    id               String    @id @default(cuid())
+    id               String       @id @default(cuid())
     name             String?
-    email            String?   @unique
+    email            String?      @unique
     emailVerified    DateTime?
     image            String?
     accounts         Account[]
@@ -59,10 +59,11 @@ model User {
 }
 
 model Service {
-    name     String    @id
-    rate     Float
-    users    User[]
-    requests Request[]
+    name        String    @id
+    rate        Float
+    description String @default("No description provided")
+    users       User[]
+    requests    Request[]
 }
 
 model VerificationToken {
