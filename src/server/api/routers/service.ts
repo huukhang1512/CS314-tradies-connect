@@ -1,9 +1,14 @@
 import { z } from "zod";
 import { prisma } from "@/server/db";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
+import { Role } from "@prisma/client";
 
 const ChooseServicesRequest = z.string().array();
 const GetServicesByNameRequest = z.string();
+const CreateNewServiceRequest = z.object({
+  name: z.string(),
+  rate: z.number(),
+});
 
 export const serviceRouter = createTRPCRouter({
   chooseServices: protectedProcedure
@@ -32,6 +37,22 @@ export const serviceRouter = createTRPCRouter({
         },
       });
       return updatedUser;
+    }),
+
+  createNewService: protectedProcedure
+    .input(CreateNewServiceRequest)
+    .mutation(async (req) => {
+      const { input, ctx } = req;
+      const { role } = ctx.session.user;
+      if (role !== Role.ADMIN) {
+        throw new Error("Only Admin allow to add new service");
+      }
+      return await prisma.service.create({
+        data: {
+          name: input.name,
+          rate: input.rate,
+        },
+      });
     }),
 
   getUserProvidedServices: protectedProcedure.query(async (req) => {
