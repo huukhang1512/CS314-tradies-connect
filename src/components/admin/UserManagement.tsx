@@ -1,16 +1,17 @@
-import React, { useMemo } from "react"
-import CustomTable from "../Table"
+import React, { useCallback, useMemo } from "react";
+import CustomTable from "../Table";
 import { api } from "@/utils/api";
-export interface UserManagementProps {
-
-}
+export interface UserManagementProps {}
 
 const UserManagement = (_props: UserManagementProps) => {
-  const {refetch} = api.users.getUsers.useQuery({});
-  const getData = async (page = 1, perPage = 10) => {
-    const {data} = await refetch({page, perPage});
-    return data;
-  }
+  const { mutateAsync } = api.users.getUsers.useMutation();
+
+  const getData = useCallback(
+    async (page = 1, perPage = 10) => {
+      return await mutateAsync({ page, perPage });
+    },
+    [mutateAsync]
+  );
   const columns = useMemo(
     () => [
       {
@@ -37,9 +38,11 @@ const UserManagement = (_props: UserManagementProps) => {
     []
   );
 
-  return (<>
-    <CustomTable getData={getData} columns={columns}/>
-  </>)
-}
+  return (
+    <>
+      <CustomTable getData={getData} columns={columns} />
+    </>
+  );
+};
 
 export default UserManagement;

@@ -1,4 +1,4 @@
-import { useTable, usePagination } from "react-table";
+import { useTable, usePagination, type Column } from "react-table";
 import {
   Table,
   Thead,
@@ -27,13 +27,13 @@ import {
 import { useMemo, useState, useEffect, useCallback } from "react";
 
 export interface PaginatedData {
-  data: Object[];
+  data: object[];
   page: number;
   perPage: number;
   total: number;
 }
 export interface TableProps {
-  columns: any;
+  columns: Column[];
   getData: (page: number, perPage: number) => Promise<PaginatedData>;
 }
 
@@ -41,7 +41,7 @@ const CustomTable = (props: TableProps) => {
   const { columns, getData } = props;
 
   const [{ pageIndex, pageSize }, setPagination] = useState({
-    pageIndex: 0,
+    pageIndex: 1,
     pageSize: 10,
   });
 
@@ -53,23 +53,28 @@ const CustomTable = (props: TableProps) => {
     [pageIndex, pageSize]
   );
 
-  const [_data, setData] = useState<PaginatedData>({data: [], page: 0, perPage: 10, total: 0});
+  const [_data, setData] = useState<PaginatedData>({
+    data: [],
+    page: 0,
+    perPage: 10,
+    total: 0,
+  });
 
   const fetchData = useCallback(async () => {
-    let data = await getData(pageIndex, pageSize);
+    const data = await getData(pageIndex, pageSize);
     setData(data);
-  }, [pageIndex, pageSize]);
+  }, [getData, pageIndex, pageSize]);
 
   useEffect(() => {
-    fetchData()
+    void fetchData();
   }, [fetchData]);
-  
+
   const data = useMemo(() => _data, [_data]);
 
   const instance = useTable(
     {
       columns,
-      data: data?.data,
+      data: data.data,
       state: {
         pagination,
       },
@@ -97,13 +102,17 @@ const CustomTable = (props: TableProps) => {
   } = instance;
   return (
     <>
-      <TableContainer>
+      <TableContainer rounded={"md"}>
         <Table {...getTableProps()} variant="striped">
           <Thead bg="blue.05">
-            {headerGroups.map((headerGroup) => (
-              <Tr {...headerGroup.getHeaderGroupProps()}>
-                {headerGroup.headers.map((column, i) => (
-                  <Th {...column.getHeaderProps()} color="white">
+            {headerGroups.map((headerGroup, i) => (
+              <Tr {...headerGroup.getHeaderGroupProps()} key={`col-${i}`}>
+                {headerGroup.headers.map((column, j) => (
+                  <Th
+                    {...column.getHeaderProps()}
+                    color="white"
+                    key={`col-header-${j}`}
+                  >
                     {column.render("Header")}
                   </Th>
                 ))}
@@ -115,12 +124,12 @@ const CustomTable = (props: TableProps) => {
             {page.map((row, i) => {
               prepareRow(row);
               return (
-                <Tr {...row.getRowProps()}>
-                  {row.cells.map((cell) => {
-                    return (
-                      <Td {...cell.getCellProps()}>{cell.render("Cell")}</Td>
-                    );
-                  })}
+                <Tr {...row.getRowProps()} key={`row-${i}`}>
+                  {row.cells.map((cell, j) => (
+                    <Td {...cell.getCellProps()} key={`cell-${j}`}>
+                      {cell.render("Cell")}
+                    </Td>
+                  ))}
                   <Td>View details</Td>
                 </Tr>
               );
@@ -134,9 +143,9 @@ const CustomTable = (props: TableProps) => {
           <Text as="span">
             {pageIndex * pageSize + 1}
             {"-"}
-            {Math.min((pageIndex + 1) * pageSize, data.total)}
+            {Math.min((pageIndex + 1) * pageSize, data?.total)}
           </Text>{" "}
-          of <Text as="span">{data.total}</Text>
+          of <Text as="span">{data?.total}</Text>
         </Text>
       </Flex>
       <Flex justifyContent="space-between" m={4} alignItems="center">
@@ -168,11 +177,11 @@ const CustomTable = (props: TableProps) => {
             min={1}
             max={pageOptions.length}
             onChange={(value) => {
-              let v = parseInt(value);
+              const v = parseInt(value);
               const page = v ? v - 1 : 0;
               gotoPage(page);
             }}
-            defaultValue={pageIndex + 1}
+            defaultValue={pageIndex}
           >
             <NumberInputField />
             <NumberInputStepper>
