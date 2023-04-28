@@ -19,7 +19,7 @@ const PaginatedGetUsersInput = z.object({
 });
 
 const PaginatedGetUsersOutput = z.object({
-  total: z.number().positive(),
+  total: z.number(),
   page: z.number().positive(),
   perPage: z.number().positive(),
   data: z.array(User),
@@ -47,7 +47,7 @@ export const userRouter = createTRPCRouter({
     .meta({ openapi: { method: "GET", path: "/admin/users" } })
     .input(PaginatedGetUsersInput)
     .output(PaginatedGetUsersOutput)
-    .query(async (req) => {
+    .mutation(async (req) => {
       const users = await prisma.user.findMany({
         skip: (req.input.page - 1) * req.input.perPage,
         take: req.input.perPage,
