@@ -42,14 +42,27 @@ model Session {
 }
 
 model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    role          Role      @default(USER)
+    id               String       @id @default(cuid())
+    name             String?
+    email            String?      @unique
+    emailVerified    DateTime?
+    image            String?
+    accounts         Account[]
+    sessions         Session[]
+    role             Role         @default(USER)
+    providedServices Service[]
+    requests         Request[]
+    proposals        Proposal[]
+    memberships      Membership[]
+    sentReviews      Review[]     @relation("sentReviews")
+    receivedReviews  Review[]     @relation("receivedReviews")
+}
+
+model Service {
+    name     String    @id
+    rate     Float
+    users    User[]
+    requests Request[]
 }
 
 model VerificationToken {
@@ -60,7 +73,120 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
+model Request {
+    id          String        @id @default(cuid())
+    clientId    String
+    client      User          @relation(fields: [clientId], references: [id], onDelete: Cascade)
+    serviceName String
+    service     Service       @relation(fields: [serviceName], references: [name], onDelete: Cascade)
+    description String
+    status      RequestStatus @default(NEW)
+    createdAt   DateTime      @default(now())
+    unit        Int
+    price       Float
+    proposals   Proposal[]
+}
+
+model Proposal {
+    id         String         @id @default(cuid())
+    requestId  String
+    request    Request        @relation(fields: [requestId], references: [id], onDelete: Cascade)
+    providerId String
+    provider   User           @relation(fields: [providerId], references: [id], onDelete: Cascade)
+    status     ProposalStatus @default(NEW)
+    jobs       Job[]
+}
+
+model Job {
+    id           String         @id @default(cuid())
+    proposalId   String
+    proposal     Proposal       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+    status       ProposalStatus @default(NEW)
+    startedDate  DateTime       @default(now())
+    finishedDate DateTime
+    review       Review[]
+    payment      Payment[]
+}
+
+model Membership {
+    id        String         @id @default(cuid())
+    users     User[]
+    price     Float
+    type      MembershipType
+    duration  Int
+    createdAt DateTime       @default(now())
+}
+
+model Review {
+    id          String       @id @default(cuid())
+    jobId       String
+    job         Job          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+    rating      Int
+    comment     String
+    createdAt   DateTime     @default(now())
+    senderId    String
+    sender      User         @relation(name: "sentReviews", fields: [senderId], references: [id], onDelete: Cascade)
+    recipientId String
+    recipient   User         @relation(name: "receivedReviews", fields: [recipientId], references: [id], onDelete: Cascade)
+    status      ReviewStatus @default(NEW)
+}
+
+model Payment {
+    id            String        @id @default(cuid())
+    jobId         String?
+    job           Job?          @relation(fields: [jobId], references: [id], onDelete: Cascade)
+    amount        Float
+    createdAt     DateTime      @default(now())
+    paymentType   PaymentType
+    paymentStatus PaymentStatus
+}
+
+enum PaymentType {
+    CLIENT_MEMBERSHIP
+    PROVIDER_MEMBERSHIP
+    JOB_PAYOUT
+    REQUEST
+}
+
+enum PaymentStatus {
+    PENDING
+    COMPLETED
+    DECLINED
+    CANCELLED
+}
+
+enum MembershipType {
+    PROVIDER
+    CLIENT
+}
+
 enum Role {
     ADMIN
     USER
+}
+
+enum RequestStatus {
+    NEW
+    BROADCASTED
+    IN_PROGRESS
+    COMPLETED
+    CANCELLED
+}
+
+enum ProposalStatus {
+    NEW
+    ACCEPTED
+    REJECTED
+    CANCELLED
+}
+
+enum JobStatus {
+    NEW
+    COMPLETED
+}
+
+enum ReviewStatus {
+    NEW
+    EDITED
+    DELETED
 }
