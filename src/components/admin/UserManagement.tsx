@@ -6,8 +6,9 @@ export interface UserManagementProps {
 }
 
 const UserManagement = (_props: UserManagementProps) => {
-  const getData = async (page: number, perPage: number) => {
-    const {data} = api.admin.users.getUsers.useQuery({page: 1, perPage: 10});
+  const {refetch} = api.admin.users.getUsers.useQuery({});
+  const getData = async (page = 1, perPage = 10) => {
+    const {data} = await refetch({page, perPage});
     return data;
   }
   const columns = useMemo(

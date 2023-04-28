@@ -24,21 +24,56 @@ import {
   ChevronRightIcon,
   ChevronLeftIcon,
 } from "@chakra-ui/icons";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 
-export interface TableProps<T> {
+export interface PaginatedData {
+  data: Object[];
+  page: number;
+  perPage: number;
+  total: number;
+}
+export interface TableProps {
   columns: any;
-  getData: (page: number, perPage: number) => Promise<T>;
+  getData: (page: number, perPage: number) => Promise<PaginatedData>;
 }
 
-const CustomTable = (props: TableProps<T>) => {
+const CustomTable = (props: TableProps) => {
   const { columns, getData } = props;
-  const data = useMemo()
+
+  const [{ pageIndex, pageSize }, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const pagination = useMemo(
+    () => ({
+      pageIndex,
+      pageSize,
+    }),
+    [pageIndex, pageSize]
+  );
+
+  const [_data, setData] = useState<PaginatedData>({data: [], page: 0, perPage: 10, total: 0});
+
+  const fetchData = useCallback(async () => {
+    let data = await getData(pageIndex, pageSize);
+    setData(data);
+  }, [pageIndex, pageSize]);
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData]);
+  
+  const data = useMemo(() => _data, [_data]);
+
   const instance = useTable(
     {
       columns,
-      data,
-      initialState: { pageIndex: 0, pageSize: 10 },
+      data: data?.data,
+      state: {
+        pagination,
+      },
+      onPaginationChange: setPagination,
     },
     usePagination
   );
@@ -59,7 +94,6 @@ const CustomTable = (props: TableProps<T>) => {
     nextPage,
     previousPage,
     setPageSize,
-    state: { pageIndex, pageSize },
   } = instance;
   return (
     <>
@@ -94,18 +128,17 @@ const CustomTable = (props: TableProps<T>) => {
           </Tbody>
         </Table>
       </TableContainer>
-      <Flex flexDirection={'row-reverse'}>
-          <Text flexShrink="0" color='text.third' mt={3}>
-            Showing{" "}
-            <Text as="span">
-              {pageIndex * pageSize + 1}{"-"}{Math.min((pageIndex+1) * pageSize, total)}
-            </Text>{" "}
-            of{" "}
-            <Text as="span">
-              {total}
-            </Text>
-          </Text>
-        </Flex>
+      <Flex flexDirection={"row-reverse"}>
+        <Text flexShrink="0" color="text.third" mt={3}>
+          Showing{" "}
+          <Text as="span">
+            {pageIndex * pageSize + 1}
+            {"-"}
+            {Math.min((pageIndex + 1) * pageSize, data.total)}
+          </Text>{" "}
+          of <Text as="span">{data.total}</Text>
+        </Text>
+      </Flex>
       <Flex justifyContent="space-between" m={4} alignItems="center">
         <Flex>
           <Tooltip label="First Page">
