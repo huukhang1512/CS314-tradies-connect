@@ -3,7 +3,12 @@ import { prisma } from "@/server/db";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { Role } from "@prisma/client";
 
-const ChooseServicesRequest = z.string().array();
+export const ServiceSchema = z.object({
+  name: z.string(),
+  rate: z.number(),
+  description: z.string(),
+});
+
 const GetServicesByNameRequest = z.string();
 const CreateNewServiceRequest = z.object({
   name: z.string(),
@@ -11,34 +16,6 @@ const CreateNewServiceRequest = z.object({
 });
 
 export const serviceRouter = createTRPCRouter({
-  chooseServices: protectedProcedure
-    .input(ChooseServicesRequest)
-    .mutation(async (req) => {
-      const { input: services, ctx } = req;
-      const { id } = ctx.session.user;
-
-      const validServices = await prisma.service.findMany({
-        where: {
-          name: {
-            in: services,
-          },
-        },
-        select: {
-          name: true,
-        },
-      });
-
-      const updatedUser = await prisma.user.update({
-        where: { id },
-        data: {
-          providedServices: {
-            set: validServices,
-          },
-        },
-      });
-      return updatedUser;
-    }),
-
   createNewService: protectedProcedure
     .input(CreateNewServiceRequest)
     .mutation(async (req) => {

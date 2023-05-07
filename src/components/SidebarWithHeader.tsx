@@ -2,7 +2,6 @@ import React, { type ReactNode, useState } from "react";
 import {
   IconButton,
   Box,
-  Card,
   CloseButton,
   Flex,
   HStack,

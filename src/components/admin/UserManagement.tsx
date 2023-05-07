@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from "react";
 import CustomTable from "../Table";
 import { api } from "@/utils/api";
+import { Card } from "@chakra-ui/react";
 export interface UserManagementProps {}
 
 const UserManagement = (_props: UserManagementProps) => {
@@ -39,9 +40,9 @@ const UserManagement = (_props: UserManagementProps) => {
   );
 
   return (
-    <>
+    <Card p={5}>
       <CustomTable getData={getData} columns={columns} />
-    </>
+    </Card>
   );
 };
 

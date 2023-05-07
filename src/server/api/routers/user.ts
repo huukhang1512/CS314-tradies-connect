@@ -6,6 +6,7 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { Role } from "@prisma/client";
+import { ServiceSchema } from "./service";
 
 export const User = z.object({
   id: z.string(),
@@ -33,10 +34,14 @@ const GetUserOutput = z.object({
   data: User,
 });
 
-const UpdateUserInput = User;
+const UpdateUserInput = User.extend({
+  providedServices: z.string().array().optional(),
+});
 
 const UpdateUserOutput = z.object({
-  data: User,
+  data: User.extend({
+    providedServices: ServiceSchema.array(),
+  }),
 });
 
 export type PaginatedQueryInputType = z.infer<typeof PaginatedGetUsersInput>;
@@ -96,28 +101,59 @@ export const userRouter = createTRPCRouter({
       }
       return { data: user };
     }),
-  updateUser: adminProcedure
+
+  updateUser: protectedProcedure
     .meta({ openapi: { method: "PUT", path: "/users/:id" } })
     .input(UpdateUserInput)
     .output(UpdateUserOutput)
     .mutation(async (req) => {
+      const { ctx } = req;
+      const { session } = ctx;
+      const { id, email, name, providedServices } = req.input;
+      if (session.user.id !== req.input.id) {
+        throw new Error("Only user can change their details");
+      }
+      const validServices = await prisma.service.findMany({
+        where: {
+          name: {
+            in: providedServices,
+          },
+        },
+        select: {
+          name: true,
+        },
+      });
+
       const user = await prisma.user.update({
         where: {
-          id: req.input.id,
+          id,
         },
         data: {
-          email: req.input.email,
-          name: req.input.name,
+          email,
+          name,
+          providedServices: {
+            set: validServices,
+          },
         },
         select: {
           id: true,
           email: true,
           name: true,
+          providedServices: true,
         },
       });
       if (!user) {
         throw new Error("User not found");
       }
-      return { data: user };
+      return {
+        data: {
+          ...user,
+          providedServices: user.providedServices.map((service) => ({
+            name: service.name,
+            rate: service.rate,
+            description: service.description,
+          })),
+        },
+      };
     }),
 });
