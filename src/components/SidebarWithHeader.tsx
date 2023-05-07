@@ -2,6 +2,7 @@ import React, { type ReactNode, useState } from "react";
 import {
   IconButton,
   Box,
+  Card,
   CloseButton,
   Flex,
   HStack,
@@ -109,7 +110,7 @@ export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
       {/* mobilenav */}
       <MobileNav onOpen={onOpen} currPage={currPage} portal={portal} />
       <Box ml={{ base: 0, md: 300 }} p="4">
-        {children}
+        <Card p={6}>{children}</Card>
       </Box>
     </Box>
   );

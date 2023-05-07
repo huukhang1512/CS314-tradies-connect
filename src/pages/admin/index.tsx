@@ -4,11 +4,13 @@ import { Portal } from "@/components/SidebarWithHeader";
 import { Role } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/server/auth";
+import UserManagement from "@/components/admin/UserManagement";
 
 const Admin = () => {
   return (
     <>
       <SidebarWithHeader portal={Portal.ADMIN}>
+        <UserManagement />
       </SidebarWithHeader>
     </>
   );

@@ -48,3 +48,10 @@
 ```bash
 > yarn dev
 ```
+
+### Tools
+
+- Run Prisma studio to interact with the database
+```bash
+> yarn prisma studio
+```
