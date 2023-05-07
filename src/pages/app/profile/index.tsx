@@ -54,7 +54,7 @@ const Profile = () => {
     },
     onSubmit: async (values) => {
       if (!sessionData) return;
-      const { data: updatedUser } = await editUserDetail({
+      await editUserDetail({
         id: sessionData?.user.id,
         email: values.email,
         name: values.name,
@@ -62,17 +62,8 @@ const Profile = () => {
           (service) => service.label
         ),
       });
-      setIsReadOnly(true);
       await update();
-      formik.resetForm({
-        values: {
-          email: updatedUser.email || "",
-          name: updatedUser.name || "",
-          providedServices: updatedUser.providedServices.map((service) =>
-            serviceToSelectValue(service)
-          ),
-        },
-      });
+      setIsReadOnly(true);
     },
   });
 
@@ -85,11 +76,6 @@ const Profile = () => {
     e: MultiValue<{ value: string; label: string }>
   ) => {
     void formik.setFieldValue("providedServices", e);
-  };
-
-  const cancelEdit = () => {
-    setIsReadOnly(true);
-    formik.resetForm();
   };
 
   if (!services || !sessionData || !providedServicesData) return <></>;
@@ -143,9 +129,7 @@ const Profile = () => {
               <Button
                 variant={"primary"}
                 px={7}
-                onClick={() =>
-                  isReadOnly ? setIsReadOnly(false) : cancelEdit()
-                }
+                onClick={() => setIsReadOnly(!isReadOnly)}
               >
                 {isReadOnly ? "Edit" : "Cancel"}
               </Button>
@@ -234,7 +218,7 @@ const Profile = () => {
                     icon={<AiOutlineClose />}
                     aria-label="Cancel"
                     color={"red"}
-                    onClick={cancelEdit}
+                    onClick={() => setIsReadOnly(true)}
                   />
                 </HStack>
               </GridItem>
