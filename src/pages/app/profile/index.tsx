@@ -100,7 +100,6 @@ const Profile = () => {
                 borderColor={"text.disable"}
                 borderWidth={1}
                 value={sessionData.user.email || ""}
-                isReadOnly
               />
             </FormControl>
           </GridItem>
@@ -113,6 +112,19 @@ const Profile = () => {
                 borderColor={"text.disable"}
                 borderWidth={1}
                 value={sessionData.user.name || ""}
+              />
+            </FormControl>
+          </GridItem>
+          {/* TODO(khang): Read address from user db*/}
+          <GridItem>
+            <FormControl>
+              <FormLabel>Address</FormLabel>
+              <Input
+                variant={"filled"}
+                bg={"background.gray"}
+                placeholder={"123 Haig Street, George Avenue, NSW 2200"}
+                borderColor={"text.disable"}
+                borderWidth={1}
               />
             </FormControl>
           </GridItem>
