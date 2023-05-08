@@ -2,7 +2,6 @@ import React, { type ReactNode, useState } from "react";
 import {
   IconButton,
   Box,
-  Card,
   CloseButton,
   Flex,
   HStack,
@@ -20,7 +19,7 @@ import {
 import Link from "next/link";
 import { FiMenu, FiBell } from "react-icons/fi";
 import { AiOutlineFileDone } from "react-icons/ai";
-import { IoWalletOutline } from "react-icons/io5";
+import { IoWalletOutline, IoPeopleOutline } from "react-icons/io5";
 import { type IconType } from "react-icons";
 import { BiBadgeCheck } from "react-icons/bi";
 import {
@@ -58,14 +57,22 @@ const ClientLinkItems: LinkItemProps[] = [
   { name: "My payment", icon: IoWalletOutline },
 ];
 
+const ProfileLinkItems: LinkItemProps[] = [
+  { name: "Account Details", icon: IoPeopleOutline },
+  { name: "Subcriptions", icon: BiBadgeCheck },
+  { name: "My payment", icon: IoWalletOutline },
+];
+
 export enum Portal {
   ADMIN = "admin",
+  PROFILE = "profile",
   TRADIE = "tradie",
   CLIENT = "client",
 }
 
 const LinkItemsList: Record<Portal, LinkItemProps[]> = {
   [Portal.ADMIN]: AdminLinkItems,
+  [Portal.PROFILE]: ProfileLinkItems,
   [Portal.TRADIE]: TradieLinkItems,
   [Portal.CLIENT]: ClientLinkItems,
 };
@@ -81,7 +88,12 @@ export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   return (
-    <Box minH="100vh" w="100vw" bg={useColorModeValue("gray.100", "gray.900")}>
+    <HStack
+      minH="full"
+      w="full"
+      spacing={0}
+      bg={useColorModeValue("gray.100", "gray.900")}
+    >
       <SidebarContent
         onClose={onClose}
         display={{ base: "none", md: "block" }}
@@ -108,11 +120,14 @@ export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
-      <MobileNav onOpen={onOpen} currPage={currPage} portal={portal} />
-      <Box ml={{ base: 0, md: 300 }} p="4">
-        <Card p={6}>{children}</Card>
-      </Box>
-    </Box>
+      <VStack pos={"relative"} w={"full"} h={"full"}>
+        dsa
+        <MobileNav onOpen={onOpen} currPage={currPage} portal={portal} />
+        <Box p="4" w={"full"} h={"full"}>
+          {children}
+        </Box>
+      </VStack>
+    </HStack>
   );
 }
 
@@ -138,7 +153,6 @@ const SidebarContent = ({
       borderRight="1px"
       borderRightColor={useColorModeValue("gray.200", "gray.700")}
       w={{ base: "full", md: 300 }}
-      pos="fixed"
       h="full"
       {...rest}
     >
@@ -235,10 +249,11 @@ const MobileNav = ({ onOpen, currPage, portal, ...rest }: MobileProps) => {
 
   return (
     <Flex
-      ml={{ base: 0, md: 300 }}
       px={{ base: 4, md: 4 }}
       height="20"
       alignItems="center"
+      top={0}
+      w={"full"}
       bg={useColorModeValue("white", "gray.900")}
       borderBottomWidth="1px"
       borderBottomColor={useColorModeValue("gray.200", "gray.700")}
