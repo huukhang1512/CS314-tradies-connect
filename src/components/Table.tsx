@@ -17,6 +17,8 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   TableContainer,
+  Button,
+  VStack,
 } from "@chakra-ui/react";
 import {
   ArrowRightIcon,
@@ -32,14 +34,21 @@ export interface PaginatedData {
   perPage: number;
   total: number;
 }
-export interface TableProps {
+
+export interface RowAction<T> {
+  callback: (row: T) => void;
+  actionName: string;
+  icon?: JSX.Element;
+}
+export interface TableProps<T> {
   columns: Column[];
+  actions?: RowAction<T>[];
   getData: (page: number, perPage: number) => Promise<PaginatedData>;
+  refetchState: boolean; // force the table to rerender
 }
 
-const CustomTable = (props: TableProps) => {
-  const { columns, getData } = props;
-
+const CustomTable = <T,>(props: TableProps<T>) => {
+  const { columns, getData, actions } = props;
   const [{ pageIndex, pageSize }, setPagination] = useState({
     pageIndex: 1,
     pageSize: 10,
@@ -66,8 +75,10 @@ const CustomTable = (props: TableProps) => {
   }, [getData, pageIndex, pageSize]);
 
   useEffect(() => {
-    void fetchData();
-  }, [fetchData]);
+    if (props.refetchState) {
+      void fetchData();
+    }
+  }, [fetchData, props.refetchState]);
 
   const data = useMemo(() => _data, [_data]);
 
@@ -102,7 +113,7 @@ const CustomTable = (props: TableProps) => {
   } = instance;
   return (
     <>
-      <TableContainer rounded={"md"}>
+      <TableContainer rounded={"md"} w={"full"}>
         <Table {...getTableProps()} variant="striped">
           <Thead bg="blue.05">
             {headerGroups.map((headerGroup, i) => (
@@ -116,11 +127,11 @@ const CustomTable = (props: TableProps) => {
                     {column.render("Header")}
                   </Th>
                 ))}
-                <Th color="white">Actions</Th>
+                {actions && <Th color="white">Actions</Th>}
               </Tr>
             ))}
           </Thead>
-          <Tbody {...getTableBodyProps()}>
+          <Tbody {...getTableBodyProps()} w={"full"}>
             {page.map((row, i) => {
               prepareRow(row);
               return (
@@ -130,14 +141,29 @@ const CustomTable = (props: TableProps) => {
                       {cell.render("Cell")}
                     </Td>
                   ))}
-                  <Td>View details</Td>
+                  {actions && (
+                    <Td>
+                      <VStack spacing={2} align={"flex-start"}>
+                        {actions.map((action) => (
+                          <Button
+                            leftIcon={action.icon}
+                            variant={"link"}
+                            onClick={() => action.callback(row.values as T)}
+                            key={action.actionName}
+                          >
+                            {action.actionName}
+                          </Button>
+                        ))}
+                      </VStack>
+                    </Td>
+                  )}
                 </Tr>
               );
             })}
           </Tbody>
         </Table>
       </TableContainer>
-      <Flex flexDirection={"row-reverse"}>
+      <Flex flexDirection={"row-reverse"} w={"full"}>
         <Text flexShrink="0" color="text.third" mt={3}>
           Showing{" "}
           <Text as="span">
@@ -148,7 +174,7 @@ const CustomTable = (props: TableProps) => {
           of <Text as="span">{data?.total}</Text>
         </Text>
       </Flex>
-      <Flex justifyContent="space-between" m={4} alignItems="center">
+      <Flex justifyContent="space-between" m={4} alignItems="center" w="full">
         <Flex>
           <Tooltip label="First Page">
             <IconButton

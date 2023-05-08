@@ -15,6 +15,9 @@ const components: ChakraTheme["components"] = {
         bg: "button.secondary",
         color: "blue.primary",
       },
+      link: {
+        color: "blue.primary",
+      },
     },
   },
 };

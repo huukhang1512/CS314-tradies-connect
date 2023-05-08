@@ -14,8 +14,9 @@ export const getServerSidePropsWithAuth = async (
 
   if (
     !context.resolvedUrl.startsWith("/admin") &&
-    session?.user.role === Role.ADMIN) {
-    return { redirect: { destination: "/admin" } };
+    session?.user.role === Role.ADMIN
+  ) {
+    return { redirect: { destination: "/admin/user-management" } };
   }
 
   if (
@@ -24,7 +25,7 @@ export const getServerSidePropsWithAuth = async (
   ) {
     return { redirect: { destination: "/403" } };
   }
-  
+
   return {
     props: { session },
   };
