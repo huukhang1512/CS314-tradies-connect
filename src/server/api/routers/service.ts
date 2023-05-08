@@ -1,7 +1,10 @@
 import { z } from "zod";
 import { prisma } from "@/server/db";
-import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
-import { Role } from "@prisma/client";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from "@/server/api/trpc";
 
 export const ServiceSchema = z.object({
   name: z.string(),
@@ -9,25 +12,51 @@ export const ServiceSchema = z.object({
   description: z.string(),
 });
 
+const PaginatedGetServiceInput = z.object({
+  page: z.number().positive().default(1),
+  perPage: z.number().positive().default(10),
+});
+
 const GetServicesByNameRequest = z.string();
 const CreateNewServiceRequest = z.object({
   name: z.string(),
   rate: z.number(),
+  description: z.string(),
+});
+
+const UpdateServiceRequest = z.object({
+  name: z.string(),
+  rate: z.number(),
+  description: z.string(),
 });
 
 export const serviceRouter = createTRPCRouter({
-  createNewService: protectedProcedure
+  createNewService: adminProcedure
     .input(CreateNewServiceRequest)
     .mutation(async (req) => {
-      const { input, ctx } = req;
-      const { role } = ctx.session.user;
-      if (role !== Role.ADMIN) {
-        throw new Error("Only Admin allow to add new service");
-      }
+      const { input } = req;
       return await prisma.service.create({
         data: {
           name: input.name,
           rate: input.rate,
+          description: input.description,
+        },
+      });
+    }),
+
+  updateService: adminProcedure
+    .input(UpdateServiceRequest)
+    .mutation(async (req) => {
+      const { input } = req;
+      const { name, rate, description } = input;
+      return await prisma.service.update({
+        where: {
+          name,
+        },
+        data: {
+          name,
+          rate,
+          description,
         },
       });
     }),
@@ -46,6 +75,22 @@ export const serviceRouter = createTRPCRouter({
   getServices: protectedProcedure.query(async () => {
     return await prisma.service.findMany();
   }),
+
+  paginatedGetServices: adminProcedure
+    .input(PaginatedGetServiceInput)
+    .mutation(async (req) => {
+      const services = await prisma.service.findMany({
+        skip: (req.input.page - 1) * req.input.perPage,
+        take: req.input.perPage,
+      });
+      const total = await prisma.service.count();
+      return {
+        total,
+        page: req.input.page,
+        perPage: req.input.perPage,
+        data: services,
+      };
+    }),
 
   getServicesByName: protectedProcedure
     .input(GetServicesByNameRequest)

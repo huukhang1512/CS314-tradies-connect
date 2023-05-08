@@ -1,4 +1,4 @@
-import React, { type ReactNode, useState } from "react";
+import React, { type ReactNode } from "react";
 import {
   IconButton,
   Box,
@@ -9,12 +9,12 @@ import {
   useColorModeValue,
   Drawer,
   DrawerContent,
-  Text,
   useDisclosure,
   type BoxProps,
   type FlexProps,
   Heading,
   VStack,
+  Text,
 } from "@chakra-ui/react";
 import Link from "next/link";
 import { FiMenu, FiBell } from "react-icons/fi";
@@ -30,37 +30,60 @@ import {
 import { TbTools } from "react-icons/tb";
 import { MdCardMembership } from "react-icons/md";
 import TopBarMenu from "./TopBarMenu";
+import { useRouter } from "next/router";
+
 interface LinkItemProps {
   name: string;
   icon: IconType;
+  link: string;
   component?: ReactNode;
 }
 
 const AdminLinkItems: LinkItemProps[] = [
-  { name: "User Management", icon: HiOutlineUserGroup },
-  { name: "Request Management", icon: HiOutlineClipboardList },
-  { name: "Payment Management", icon: IoWalletOutline },
-  { name: "Service Management", icon: TbTools },
-  { name: "Membership Management", icon: MdCardMembership },
+  {
+    name: "User Management",
+    icon: HiOutlineUserGroup,
+    link: "/admin/user-management",
+  },
+  {
+    name: "Request Management",
+    icon: HiOutlineClipboardList,
+    link: "/admin/request-management",
+  },
+  {
+    name: "Payment Management",
+    icon: IoWalletOutline,
+    link: "/admin/payment-management",
+  },
+  {
+    name: "Service Management",
+    icon: TbTools,
+    link: "/admin/service-management",
+  },
+  {
+    name: "Membership Management",
+    icon: MdCardMembership,
+    link: "/admin/membership-management",
+  },
 ];
 
 const TradieLinkItems: LinkItemProps[] = [
-  { name: "Available Requests", icon: HiOutlineGlobeAlt },
-  { name: "My proposal list", icon: HiOutlineClipboardList },
-  { name: "Subcriptions", icon: BiBadgeCheck },
-  { name: "My payment", icon: IoWalletOutline },
+  { name: "Available Requests", icon: HiOutlineGlobeAlt, link: "" },
+  { name: "My proposal list", icon: HiOutlineClipboardList, link: "" },
+  { name: "Subcriptions", icon: BiBadgeCheck, link: "" },
+  { name: "My payment", icon: IoWalletOutline, link: "" },
 ];
 
 const ClientLinkItems: LinkItemProps[] = [
-  { name: "My request list", icon: AiOutlineFileDone },
-  { name: "Subcriptions", icon: BiBadgeCheck },
-  { name: "My payment", icon: IoWalletOutline },
+  { name: "My request list", icon: AiOutlineFileDone, link: "" },
+  { name: "Subcriptions", icon: BiBadgeCheck, link: "" },
+  { name: "My payment", icon: IoWalletOutline, link: "" },
 ];
 
 const ProfileLinkItems: LinkItemProps[] = [
-  { name: "Account Details", icon: IoPeopleOutline },
-  { name: "Subcriptions", icon: BiBadgeCheck },
-  { name: "My payment", icon: IoWalletOutline },
+  { name: "Account Details", icon: IoPeopleOutline, link: "" },
+  { name: "Subcriptions", icon: BiBadgeCheck, link: "" },
+  { name: "My payment", icon: IoWalletOutline, link: "" },
 ];
 
 export enum Portal {
@@ -84,9 +107,8 @@ export type SidebarWithHeaderProps = {
 
 export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
   const { children, portal } = props;
-  const [currPage, setCurrPage] = useState<number>(0);
   const { isOpen, onOpen, onClose } = useDisclosure();
-
+  const router = useRouter();
   return (
     <HStack
       minH="full"
@@ -96,10 +118,9 @@ export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
     >
       <SidebarContent
         onClose={onClose}
+        curPage={router.pathname}
         display={{ base: "none", md: "block" }}
-        currPage={currPage}
         portal={portal}
-        setCurrPage={setCurrPage}
       />
       <Drawer
         autoFocus={false}
@@ -113,16 +134,14 @@ export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
         <DrawerContent>
           <SidebarContent
             onClose={onClose}
-            currPage={currPage}
             portal={portal}
-            setCurrPage={setCurrPage}
+            curPage={router.pathname}
           />
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
       <VStack pos={"relative"} w={"full"} h={"full"}>
-        dsa
-        <MobileNav onOpen={onOpen} currPage={currPage} portal={portal} />
+        <MobileNav onOpen={onOpen} portal={portal} curPage={router.pathname} />
         <Box p="4" w={"full"} h={"full"}>
           {children}
         </Box>
@@ -133,16 +152,14 @@ export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
 
 interface SidebarProps extends BoxProps {
   onClose: () => void;
-  currPage: number;
+  curPage: string;
   portal: Portal;
-  setCurrPage: (page: number) => void;
 }
 
 const SidebarContent = ({
   onClose,
-  currPage,
   portal,
-  setCurrPage,
+  curPage,
   ...rest
 }: SidebarProps) => {
   const LinkItems = LinkItemsList[portal];
@@ -169,13 +186,12 @@ const SidebarContent = ({
         <CloseButton display={{ base: "flex", md: "none" }} onClick={onClose} />
       </Flex>
       <VStack px={5}>
-        {LinkItems.map((link: LinkItemProps, i: number) => (
+        {LinkItems.map((link: LinkItemProps) => (
           <NavItem
             key={link.name}
             icon={link.icon}
-            onClick={() => setCurrPage(i)}
-            index={i}
-            currPage={currPage}
+            link={link.link}
+            curPage={curPage}
           >
             {link.name}
           </NavItem>
@@ -188,29 +204,16 @@ const SidebarContent = ({
 interface NavItemProps extends FlexProps {
   icon: IconType;
   children: ReactNode;
-  index: number;
-  currPage: number;
+  curPage: string;
+  link: string;
 }
-const NavItem = ({
-  icon,
-  children,
-  index,
-  currPage,
-  ...rest
-}: NavItemProps) => {
-  const style =
-    index === currPage
-      ? {
-          bg: "blue.01",
-          color: "blue.primary",
-        }
-      : {};
-
+const NavItem = ({ icon, children, link, curPage, ...rest }: NavItemProps) => {
   return (
     <Flex
       as={Link}
-      href="#"
-      sx={style}
+      href={link}
+      bg={link === curPage ? "blue.01" : ""}
+      color={link === curPage ? "blue.primary" : ""}
       align="center"
       w={"full"}
       p="4"
@@ -241,10 +244,10 @@ const NavItem = ({
 
 interface MobileProps extends FlexProps {
   onOpen: () => void;
-  currPage: number;
+  curPage: string;
   portal: Portal;
 }
-const MobileNav = ({ onOpen, currPage, portal, ...rest }: MobileProps) => {
+const MobileNav = ({ onOpen, curPage, portal, ...rest }: MobileProps) => {
   const LinkItems = LinkItemsList[portal];
 
   return (
@@ -275,7 +278,7 @@ const MobileNav = ({ onOpen, currPage, portal, ...rest }: MobileProps) => {
         ml={{ base: "4", md: "6" }}
         fontWeight="bold"
       >
-        {LinkItems[currPage]?.name}
+        {LinkItems.find((item) => item.link === curPage)?.name}
       </Text>
 
       <HStack spacing={{ base: "0", md: "6" }}>

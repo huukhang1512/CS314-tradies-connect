@@ -1,11 +1,13 @@
-import React, { useCallback, useMemo } from "react";
-import CustomTable from "../Table";
+import SidebarWithHeader from "@/components/SidebarWithHeader";
+import { Portal } from "@/components/SidebarWithHeader";
+import CustomTable from "@/components/Table";
 import { api } from "@/utils/api";
 import { Card } from "@chakra-ui/react";
-export interface UserManagementProps {}
+import { useCallback, useMemo, useState } from "react";
 
-const UserManagement = (_props: UserManagementProps) => {
+const UserManagement = () => {
   const { mutateAsync } = api.users.getUsers.useMutation();
+  const [forceRefetch, _setForceRefetch] = useState(true);
 
   const getData = useCallback(
     async (page = 1, perPage = 10) => {
@@ -33,17 +35,24 @@ const UserManagement = (_props: UserManagementProps) => {
       },
       {
         Header: "JOINED DATE",
-        accessor: "created",
+        accessor: "",
       },
     ],
     []
   );
 
   return (
-    <Card p={5}>
-      <CustomTable getData={getData} columns={columns} />
-    </Card>
+    <SidebarWithHeader portal={Portal.ADMIN}>
+      <Card p={5}>
+        <CustomTable
+          refetchState={forceRefetch}
+          getData={getData}
+          columns={columns}
+        />
+      </Card>
+    </SidebarWithHeader>
   );
 };
 
 export default UserManagement;
+export { getServerSidePropsWithAuth as getServerSideProps } from "@/components/getServerSidePropsWithAuth";
