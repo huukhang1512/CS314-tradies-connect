@@ -44,8 +44,8 @@ model User {
     emailVerified    DateTime?
     image            String?
     address          String?
-    lat              Float?
-    lng              Float?
+    lat              String?
+    lng              String?
     accounts         Account[]
     sessions         Session[]
     role             Role         @default(USER)

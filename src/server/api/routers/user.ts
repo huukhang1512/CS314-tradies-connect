@@ -13,8 +13,8 @@ export const User = z.object({
   email: z.string().nullable(),
   name: z.string().nullable(),
   address: z.string().nullable(),
-  lat: z.number().nullable(),
-  lng: z.number().nullable(),
+  lat: z.string().nullable(),
+  lng: z.string().nullable(),
 });
 
 const PaginatedGetUsersInput = z.object({
@@ -36,8 +36,6 @@ const GetUserInput = z.object({
 const UpdateUserInput = User.extend({
   providedServices: z.string().array().optional(),
   address: z.string().optional(),
-  lat: z.number().optional(),
-  lng: z.number().optional(),
 });
 
 const UpdateUserOutput = z.object({

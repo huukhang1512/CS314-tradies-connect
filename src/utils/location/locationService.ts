@@ -5,8 +5,8 @@ const locationSchema = z.object({
   licence: z.string(),
   osm_type: z.string(),
   osm_id: z.number(),
-  lat: z.number(),
-  lon: z.number(),
+  lat: z.string(),
+  lon: z.string(),
   display_name: z.string(),
   address: z.object({
     building: z.string(),
@@ -16,7 +16,6 @@ const locationSchema = z.object({
     city: z.string(),
     municipality: z.string(),
     state: z.string(),
-    ISO3166_2_lvl4: z.string(),
     postcode: z.string(),
     country: z.string(),
     country_code: z.string(),

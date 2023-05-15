@@ -79,8 +79,8 @@ const Profile = () => {
       email: sessionData?.user.email || "",
       name: sessionData?.user.name || "",
       address: userData?.address || "",
-      lat: userData?.lat || 0,
-      lng: userData?.lng || 0,
+      lat: userData?.lat || "",
+      lng: userData?.lng || "",
       providedServices:
         providedServicesData?.providedServices.map((service) =>
           serviceToSelectValue(service)
