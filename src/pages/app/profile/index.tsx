@@ -40,6 +40,7 @@ const Profile = () => {
   const { data: providedServicesData } =
     api.services.getUserProvidedServices.useQuery();
   const { data: services } = api.services.getServices.useQuery();
+  const { data: userData } = api.users.getUser.useQuery({ id: sessionData?.user.id || '' });
 
   const { mutateAsync: getServicesByName, isLoading: isGettingServiceByName } =
     api.services.getServicesByName.useMutation();
@@ -71,9 +72,9 @@ const Profile = () => {
     initialValues: {
       email: sessionData?.user.email || "",
       name: sessionData?.user.name || "",
-      address: "",
-      lat: -1,
-      lng: -1,
+      address: userData?.address || "",
+      lat: userData?.lat || 0,
+      lng: userData?.lng || 0,
       providedServices:
         providedServicesData?.providedServices.map((service) =>
           serviceToSelectValue(service)

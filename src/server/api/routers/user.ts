@@ -12,6 +12,9 @@ export const User = z.object({
   id: z.string(),
   email: z.string().nullable(),
   name: z.string().nullable(),
+  address: z.string().nullable(),
+  lat: z.string().nullable(),
+  lng: z.string().nullable()
 });
 
 const PaginatedGetUsersInput = z.object({
@@ -85,9 +88,7 @@ export const userRouter = createTRPCRouter({
       };
     }),
   getUser: protectedProcedure
-    .meta({ openapi: { method: "GET", path: "/users/:id" } })
     .input(GetUserInput)
-    .output(GetUserOutput)
     .query(async (req) => {
       const user = await prisma.user.findUnique({
         where: {
@@ -96,13 +97,16 @@ export const userRouter = createTRPCRouter({
         select: {
           id: true,
           email: true,
+          address: true,
+          lat: true,
+          lng: true,
           name: true,
         },
       });
       if (!user) {
         throw new Error("User not found");
       }
-      return { data: user };
+      return user;
     }),
 
   updateUser: protectedProcedure
