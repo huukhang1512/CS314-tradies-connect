@@ -223,8 +223,12 @@ const Profile = () => {
                     borderWidth={1}
                   />
                   <InputRightElement>
-                    <Tooltip label={"Get my current location"}>
+                    <Tooltip
+                      label={"Get my current location"}
+                      isDisabled={isReadOnly}
+                    >
                       <IconButton
+                        isDisabled={isReadOnly}
                         variant={"ghost"}
                         aria-label="current location icon"
                         onClick={getCurrentLocation}
