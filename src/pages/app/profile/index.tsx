@@ -13,8 +13,11 @@ import {
   Heading,
   IconButton,
   Input,
+  InputGroup,
+  InputRightElement,
   SimpleGrid,
   Text,
+  Tooltip,
   VStack,
 } from "@chakra-ui/react";
 import profileCoverPhoto from "@/assets/profileCoverPhoto.jpg";
@@ -25,6 +28,7 @@ import { useFormik } from "formik";
 import { useState } from "react";
 import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai";
 import { type Service } from "@prisma/client";
+import { TbCurrentLocation } from "react-icons/tb";
 
 const serviceToSelectValue = (service: Service) => ({
   value: service.name,
@@ -42,11 +46,34 @@ const Profile = () => {
   const { mutateAsync: editUserDetail } = api.users.updateUser.useMutation();
 
   const [isReadOnly, setIsReadOnly] = useState(true);
+
+  const getCurrentLocation = () => {
+    window.navigator.geolocation.getCurrentPosition((position) => {
+      void reverseGeocode(position.coords.latitude, position.coords.longitude);
+    });
+  };
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    const data = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&extratags=1`
+    );
+    const address = await data.json();
+    void formik.setValues({
+      ...formik.values,
+      lat,
+      lng,
+      address: address.display_name,
+    });
+  };
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
       email: sessionData?.user.email || "",
       name: sessionData?.user.name || "",
+      address: "",
+      lat: -1,
+      lng: -1,
       providedServices:
         providedServicesData?.providedServices.map((service) =>
           serviceToSelectValue(service)
@@ -58,6 +85,9 @@ const Profile = () => {
         id: sessionData?.user.id,
         email: values.email,
         name: values.name,
+        lat: values.lat,
+        lng: values.lng,
+        address: values.address,
         providedServices: values.providedServices.map(
           (service) => service.label
         ),
@@ -175,13 +205,27 @@ const Profile = () => {
             <GridItem>
               <FormControl>
                 <FormLabel>Address</FormLabel>
-                <Input
-                  variant={"filled"}
-                  bg={"background.gray"}
-                  placeholder={"123 Haig Street, George Avenue, NSW 2200"}
-                  borderColor={"text.disable"}
-                  borderWidth={1}
-                />
+                <InputGroup>
+                  <Input
+                    variant={"filled"}
+                    bg={"background.gray"}
+                    readOnly
+                    value={formik.values.address}
+                    placeholder={"123 Haig Street, George Avenue, NSW 2200"}
+                    borderColor={"text.disable"}
+                    borderWidth={1}
+                  />
+                  <InputRightElement>
+                    <Tooltip label={"Get my current location"}>
+                      <IconButton
+                        variant={"ghost"}
+                        aria-label="current location icon"
+                        onClick={getCurrentLocation}
+                        icon={<TbCurrentLocation />}
+                      />
+                    </Tooltip>
+                  </InputRightElement>
+                </InputGroup>
               </FormControl>
             </GridItem>
             <GridItem>

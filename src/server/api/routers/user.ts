@@ -36,6 +36,9 @@ const GetUserOutput = z.object({
 
 const UpdateUserInput = User.extend({
   providedServices: z.string().array().optional(),
+  address: z.string().optional(),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
 });
 
 const UpdateUserOutput = z.object({
@@ -109,7 +112,8 @@ export const userRouter = createTRPCRouter({
     .mutation(async (req) => {
       const { ctx } = req;
       const { session } = ctx;
-      const { id, email, name, providedServices } = req.input;
+      const { id, email, name, providedServices, address, lat, lng } =
+        req.input;
       if (session.user.id !== req.input.id) {
         throw new Error("Only user can change their details");
       }
@@ -131,6 +135,9 @@ export const userRouter = createTRPCRouter({
         data: {
           email,
           name,
+          address,
+          lat,
+          lng,
           providedServices: {
             set: validServices,
           },
@@ -139,6 +146,9 @@ export const userRouter = createTRPCRouter({
           id: true,
           email: true,
           name: true,
+          address: true,
+          lat: true,
+          lng: true,
           providedServices: true,
         },
       });
