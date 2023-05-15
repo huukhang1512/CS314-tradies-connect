@@ -29,6 +29,7 @@ import { useState } from "react";
 import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai";
 import { type Service } from "@prisma/client";
 import { TbCurrentLocation } from "react-icons/tb";
+import { reverseGeocode } from "@/utils/location/locationService";
 
 const serviceToSelectValue = (service: Service) => ({
   value: service.name,
@@ -40,7 +41,9 @@ const Profile = () => {
   const { data: providedServicesData } =
     api.services.getUserProvidedServices.useQuery();
   const { data: services } = api.services.getServices.useQuery();
-  const { data: userData } = api.users.getUser.useQuery({ id: sessionData?.user.id || '' });
+  const { data: userData } = api.users.getUser.useQuery({
+    id: sessionData?.user.id || "",
+  });
 
   const { mutateAsync: getServicesByName, isLoading: isGettingServiceByName } =
     api.services.getServicesByName.useMutation();
@@ -50,20 +53,23 @@ const Profile = () => {
 
   const getCurrentLocation = () => {
     window.navigator.geolocation.getCurrentPosition((position) => {
-      void reverseGeocode(position.coords.latitude, position.coords.longitude);
+      void setLocationDetails(
+        position.coords.latitude,
+        position.coords.longitude
+      );
     });
   };
 
-  const reverseGeocode = async (lat: number, lng: number) => {
-    const data = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&extratags=1`
+  const setLocationDetails = async (latitude: number, longitude: number) => {
+    const { lat, lon, display_name } = await reverseGeocode(
+      latitude,
+      longitude
     );
-    const address = await data.json();
     void formik.setValues({
       ...formik.values,
       lat,
-      lng,
-      address: address.display_name,
+      lng: lon,
+      address: display_name,
     });
   };
 

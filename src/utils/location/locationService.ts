@@ -1,0 +1,38 @@
+import * as z from "zod";
+
+const locationSchema = z.object({
+  place_id: z.number(),
+  licence: z.string(),
+  osm_type: z.string(),
+  osm_id: z.number(),
+  lat: z.number(),
+  lon: z.number(),
+  display_name: z.string(),
+  address: z.object({
+    building: z.string(),
+    road: z.string(),
+    neighbourhood: z.string(),
+    suburb: z.string(),
+    city: z.string(),
+    municipality: z.string(),
+    state: z.string(),
+    ISO3166_2_lvl4: z.string(),
+    postcode: z.string(),
+    country: z.string(),
+    country_code: z.string(),
+  }),
+  extratags: z.object({
+    "building:levels": z.string(),
+  }),
+  boundingbox: z.tuple([z.string(), z.string(), z.string(), z.string()]),
+});
+
+export type Location = z.infer<typeof locationSchema>;
+
+export const reverseGeocode = async (lat: number, lng: number) => {
+  const data = await fetch(
+    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&extratags=1`
+  );
+  const locationData = locationSchema.parse(await data.json());
+  return locationData;
+};

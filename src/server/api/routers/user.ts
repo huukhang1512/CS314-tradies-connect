@@ -13,8 +13,8 @@ export const User = z.object({
   email: z.string().nullable(),
   name: z.string().nullable(),
   address: z.string().nullable(),
-  lat: z.string().nullable(),
-  lng: z.string().nullable()
+  lat: z.number().nullable(),
+  lng: z.number().nullable(),
 });
 
 const PaginatedGetUsersInput = z.object({
@@ -31,10 +31,6 @@ const PaginatedGetUsersOutput = z.object({
 
 const GetUserInput = z.object({
   id: z.string(),
-});
-
-const GetUserOutput = z.object({
-  data: User,
 });
 
 const UpdateUserInput = User.extend({
@@ -66,6 +62,9 @@ export const userRouter = createTRPCRouter({
           id: true,
           email: true,
           name: true,
+          address: true,
+          lat: true,
+          lng: true,
         },
         where: {
           role: {
@@ -87,27 +86,25 @@ export const userRouter = createTRPCRouter({
         data: users,
       };
     }),
-  getUser: protectedProcedure
-    .input(GetUserInput)
-    .query(async (req) => {
-      const user = await prisma.user.findUnique({
-        where: {
-          id: req.input.id,
-        },
-        select: {
-          id: true,
-          email: true,
-          address: true,
-          lat: true,
-          lng: true,
-          name: true,
-        },
-      });
-      if (!user) {
-        throw new Error("User not found");
-      }
-      return user;
-    }),
+  getUser: protectedProcedure.input(GetUserInput).query(async (req) => {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.input.id,
+      },
+      select: {
+        id: true,
+        email: true,
+        address: true,
+        lat: true,
+        lng: true,
+        name: true,
+      },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
+  }),
 
   updateUser: protectedProcedure
     .meta({ openapi: { method: "PUT", path: "/users/:id" } })
