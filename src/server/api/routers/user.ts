@@ -12,6 +12,9 @@ export const User = z.object({
   id: z.string(),
   email: z.string().nullable(),
   name: z.string().nullable(),
+  address: z.string().nullable(),
+  lat: z.string().nullable(),
+  lng: z.string().nullable(),
 });
 
 const PaginatedGetUsersInput = z.object({
@@ -30,12 +33,9 @@ const GetUserInput = z.object({
   id: z.string(),
 });
 
-const GetUserOutput = z.object({
-  data: User,
-});
-
 const UpdateUserInput = User.extend({
   providedServices: z.string().array().optional(),
+  address: z.string().optional(),
 });
 
 const UpdateUserOutput = z.object({
@@ -60,6 +60,9 @@ export const userRouter = createTRPCRouter({
           id: true,
           email: true,
           name: true,
+          address: true,
+          lat: true,
+          lng: true,
         },
         where: {
           role: {
@@ -81,26 +84,25 @@ export const userRouter = createTRPCRouter({
         data: users,
       };
     }),
-  getUser: protectedProcedure
-    .meta({ openapi: { method: "GET", path: "/users/:id" } })
-    .input(GetUserInput)
-    .output(GetUserOutput)
-    .query(async (req) => {
-      const user = await prisma.user.findUnique({
-        where: {
-          id: req.input.id,
-        },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-        },
-      });
-      if (!user) {
-        throw new Error("User not found");
-      }
-      return { data: user };
-    }),
+  getUser: protectedProcedure.input(GetUserInput).query(async (req) => {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.input.id,
+      },
+      select: {
+        id: true,
+        email: true,
+        address: true,
+        lat: true,
+        lng: true,
+        name: true,
+      },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
+  }),
 
   updateUser: protectedProcedure
     .meta({ openapi: { method: "PUT", path: "/users/:id" } })
@@ -109,7 +111,8 @@ export const userRouter = createTRPCRouter({
     .mutation(async (req) => {
       const { ctx } = req;
       const { session } = ctx;
-      const { id, email, name, providedServices } = req.input;
+      const { id, email, name, providedServices, address, lat, lng } =
+        req.input;
       if (session.user.id !== req.input.id) {
         throw new Error("Only user can change their details");
       }
@@ -131,6 +134,9 @@ export const userRouter = createTRPCRouter({
         data: {
           email,
           name,
+          address,
+          lat,
+          lng,
           providedServices: {
             set: validServices,
           },
@@ -139,6 +145,9 @@ export const userRouter = createTRPCRouter({
           id: true,
           email: true,
           name: true,
+          address: true,
+          lat: true,
+          lng: true,
           providedServices: true,
         },
       });
