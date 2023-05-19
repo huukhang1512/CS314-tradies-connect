@@ -8,22 +8,6 @@ const locationSchema = z.object({
   lat: z.string(),
   lon: z.string(),
   display_name: z.string(),
-  address: z.object({
-    building: z.string(),
-    road: z.string(),
-    neighbourhood: z.string(),
-    suburb: z.string(),
-    city: z.string(),
-    municipality: z.string(),
-    state: z.string(),
-    postcode: z.string(),
-    country: z.string(),
-    country_code: z.string(),
-  }),
-  extratags: z.object({
-    "building:levels": z.string(),
-  }),
-  boundingbox: z.tuple([z.string(), z.string(), z.string(), z.string()]),
 });
 
 export type Location = z.infer<typeof locationSchema>;
