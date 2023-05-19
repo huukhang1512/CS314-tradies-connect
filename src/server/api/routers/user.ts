@@ -35,7 +35,6 @@ const GetUserInput = z.object({
 
 const UpdateUserInput = User.extend({
   providedServices: z.string().array().optional(),
-  address: z.string().optional(),
 });
 
 const UpdateUserOutput = z.object({
