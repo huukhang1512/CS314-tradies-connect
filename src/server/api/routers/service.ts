@@ -64,7 +64,7 @@ export const serviceRouter = createTRPCRouter({
   getUserProvidedServices: protectedProcedure.query(async (req) => {
     const { ctx } = req;
     const { id } = ctx.session.user;
-    return await prisma.user.findFirst({
+    return await prisma.user.findUnique({
       where: { id },
       select: {
         providedServices: true,

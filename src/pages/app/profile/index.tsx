@@ -41,9 +41,7 @@ const Profile = () => {
   const { data: providedServicesData } =
     api.services.getUserProvidedServices.useQuery();
   const { data: services } = api.services.getServices.useQuery();
-  const { data: userData } = api.users.getUser.useQuery({
-    id: sessionData?.user.id || "",
-  });
+  const { data: userData } = api.users.me.useQuery();
 
   const { mutateAsync: getServicesByName, isLoading: isGettingServiceByName } =
     api.services.getServicesByName.useMutation();
@@ -208,7 +206,6 @@ const Profile = () => {
                 />
               </FormControl>
             </GridItem>
-            {/* TODO(khang): Read address from user db*/}
             <GridItem>
               <FormControl>
                 <FormLabel>Address</FormLabel>

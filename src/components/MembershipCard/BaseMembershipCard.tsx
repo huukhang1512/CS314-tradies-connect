@@ -1,14 +1,27 @@
 import { Button, HStack, Heading, Text, VStack } from "@chakra-ui/react";
-import Image from "next/image";
-import { IoCheckmarkCircleOutline } from "react-icons/io5";
+import { type Membership } from "@prisma/client";
 import membershipSVG from "@/assets/membership.svg";
 import crownIconSVG from "@/assets/crownIcon.svg";
+import Image from "next/image";
+import { IoCheckmarkCircleOutline } from "react-icons/io5";
 
-export const ClientMembership = () => {
+export const BaseMembershipCard = ({
+  membership,
+  hasPurchased,
+  onPurchase,
+  features,
+}: {
+  membership: Membership;
+  hasPurchased: boolean;
+  onPurchase: (membership: Membership) => void;
+  features?: string[];
+}) => {
   return (
     <HStack
+      key={membership.id}
       bg={"white"}
       p={6}
+      rounded={"md"}
       justify={"space-between"}
       maxW={"1073px"}
       h={"590px"}
@@ -28,30 +41,29 @@ export const ClientMembership = () => {
               textAlign={"center"}
               color={"text.secondary"}
             >
-              Client Membership
+              {membership.type} MEMBERSHIP
             </Heading>
             <Image src={crownIconSVG} alt={"Crown Icon"} />
           </VStack>
           <Heading size={"xl"} textAlign={"center"}>
-            100 AUD
+            {membership.price} AUD
           </Heading>
           <VStack minW={"60%"}>
-            <HStack color={"blue.primary"} w={"full"}>
-              <IoCheckmarkCircleOutline size={"18px"} />
-              <Text color={"text.secondary"}>
-                Fixed membership fee annually
-              </Text>
-            </HStack>
-            <HStack color={"blue.primary"} w={"full"}>
-              <IoCheckmarkCircleOutline size={"18px"} />
-              <Text color={"text.secondary"}>
-                Unlimited assistance callouts
-              </Text>
-            </HStack>
+            {features?.map((feature, i) => (
+              <HStack color={"blue.primary"} w={"full"} key={i}>
+                <IoCheckmarkCircleOutline size={"18px"} />
+                <Text color={"text.secondary"}>{feature}</Text>
+              </HStack>
+            ))}
           </VStack>
         </VStack>
-        <Button w={"full"} variant={"primary"}>
-          Purchase
+        <Button
+          w={"full"}
+          variant={"primary"}
+          isDisabled={hasPurchased}
+          onClick={() => onPurchase(membership)}
+        >
+          {hasPurchased ? "Purchased" : "Purchase"}
         </Button>
       </VStack>
       <Image src={membershipSVG} alt={"Membership picture"} />

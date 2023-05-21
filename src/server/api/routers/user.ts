@@ -29,10 +29,6 @@ const PaginatedGetUsersOutput = z.object({
   data: z.array(User),
 });
 
-const GetUserInput = z.object({
-  id: z.string(),
-});
-
 const UpdateUserInput = User.extend({
   providedServices: z.string().array().optional(),
 });
@@ -83,10 +79,11 @@ export const userRouter = createTRPCRouter({
         data: users,
       };
     }),
-  getUser: protectedProcedure.input(GetUserInput).query(async (req) => {
+  me: protectedProcedure.query(async (req) => {
+    const { session } = req.ctx;
     const user = await prisma.user.findUnique({
       where: {
-        id: req.input.id,
+        id: session.user.id,
       },
       select: {
         id: true,
@@ -95,6 +92,7 @@ export const userRouter = createTRPCRouter({
         lat: true,
         lng: true,
         name: true,
+        memberships: true,
       },
     });
     if (!user) {

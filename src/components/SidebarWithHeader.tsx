@@ -70,13 +70,21 @@ const AdminLinkItems: LinkItemProps[] = [
 const TradieLinkItems: LinkItemProps[] = [
   { name: "Available Requests", icon: HiOutlineGlobeAlt, link: "" },
   { name: "My proposal list", icon: HiOutlineClipboardList, link: "" },
-  { name: "Subcriptions", icon: BiBadgeCheck, link: "" },
+  {
+    name: "Subcriptions",
+    icon: BiBadgeCheck,
+    link: "/app/tradie/subscription",
+  },
   { name: "My payment", icon: IoWalletOutline, link: "" },
 ];
 
 const ClientLinkItems: LinkItemProps[] = [
   { name: "My request list", icon: AiOutlineFileDone, link: "" },
-  { name: "Subcriptions", icon: BiBadgeCheck, link: "" },
+  {
+    name: "Subcriptions",
+    icon: BiBadgeCheck,
+    link: "/app/client/subscription",
+  },
   { name: "My payment", icon: IoWalletOutline, link: "" },
 ];
 
@@ -142,7 +150,7 @@ export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
       {/* mobilenav */}
       <VStack pos={"relative"} w={"full"} h={"full"}>
         <MobileNav onOpen={onOpen} portal={portal} curPage={router.pathname} />
-        <Box p="4" w={"full"} h={"full"}>
+        <Box p="4" w={"full"} h={"full"} overflow={"auto"}>
           {children}
         </Box>
       </VStack>
