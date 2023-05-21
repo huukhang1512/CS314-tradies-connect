@@ -81,8 +81,8 @@ const ClientLinkItems: LinkItemProps[] = [
 ];
 
 const ProfileLinkItems: LinkItemProps[] = [
-  { name: "Account Details", icon: IoPeopleOutline, link: "" },
-  { name: "Subcriptions", icon: BiBadgeCheck, link: "" },
+  { name: "Account Details", icon: IoPeopleOutline, link: "/app/profile" },
+  { name: "Subcriptions", icon: BiBadgeCheck, link: "/app/subscription" },
   { name: "My payment", icon: IoWalletOutline, link: "" },
 ];
 
