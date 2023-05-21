@@ -28,8 +28,8 @@ import {
 } from "@chakra-ui/icons";
 import { useMemo, useState, useEffect, useCallback } from "react";
 
-export interface PaginatedData {
-  data: object[];
+export interface PaginatedData<T> {
+  data: T[];
   page: number;
   perPage: number;
   total: number;
@@ -40,14 +40,14 @@ export interface RowAction<T> {
   actionName: string;
   icon?: JSX.Element;
 }
-export interface TableProps<T> {
-  columns: Column[];
+export interface TableProps<T extends object> {
+  columns: Column<T>[];
   actions?: RowAction<T>[];
-  getData: (page: number, perPage: number) => Promise<PaginatedData>;
+  getData: (page: number, perPage: number) => Promise<PaginatedData<T>>;
   refetchState: boolean; // force the table to rerender
 }
 
-const CustomTable = <T,>(props: TableProps<T>) => {
+const CustomTable = <T extends object>(props: TableProps<T>) => {
   const { columns, getData, actions } = props;
   const [{ pageIndex, pageSize }, setPagination] = useState({
     pageIndex: 1,
@@ -62,7 +62,7 @@ const CustomTable = <T,>(props: TableProps<T>) => {
     [pageIndex, pageSize]
   );
 
-  const [_data, setData] = useState<PaginatedData>({
+  const [_data, setData] = useState<PaginatedData<T>>({
     data: [],
     page: 0,
     perPage: 10,
@@ -82,7 +82,7 @@ const CustomTable = <T,>(props: TableProps<T>) => {
 
   const data = useMemo(() => _data, [_data]);
 
-  const instance = useTable(
+  const instance = useTable<T>(
     {
       columns,
       data: data.data,

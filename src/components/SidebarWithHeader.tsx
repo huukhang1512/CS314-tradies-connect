@@ -85,13 +85,13 @@ const ClientLinkItems: LinkItemProps[] = [
     icon: BiBadgeCheck,
     link: "/app/client/subscription",
   },
-  { name: "My payment", icon: IoWalletOutline, link: "" },
+  { name: "My payment", icon: IoWalletOutline, link: "/app/payment" },
 ];
 
 const ProfileLinkItems: LinkItemProps[] = [
   { name: "Account Details", icon: IoPeopleOutline, link: "/app/profile" },
   { name: "Subcriptions", icon: BiBadgeCheck, link: "/app/subscription" },
-  { name: "My payment", icon: IoWalletOutline, link: "" },
+  { name: "My payment", icon: IoWalletOutline, link: "/app/payment" },
 ];
 
 export enum Portal {

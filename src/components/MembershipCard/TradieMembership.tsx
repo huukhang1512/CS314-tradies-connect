@@ -25,7 +25,9 @@ export const TradieMembership = () => {
   };
 
   const hasPurchased = (membershipId: string) =>
-    !!userData?.memberships.map((mem) => mem.id).includes(membershipId);
+    !!userData?.memberships
+      .map((mem: Membership) => mem.id)
+      .includes(membershipId);
 
   if (isLoadingMembership || isLoadingUserData) return <>Loading...</>;
   return (

@@ -3,11 +3,13 @@ import { Portal } from "@/components/SidebarWithHeader";
 import CustomTable from "@/components/Table";
 import { api } from "@/utils/api";
 import { Card } from "@chakra-ui/react";
+import { type User } from "@prisma/client";
 import { useCallback, useMemo, useState } from "react";
+import { type Column } from "react-table";
 
 const UserManagement = () => {
   const { mutateAsync } = api.users.getUsers.useMutation();
-  const [forceRefetch, _setForceRefetch] = useState(true);
+  const [forceRefetch] = useState(true);
 
   const getData = useCallback(
     async (page = 1, perPage = 10) => {
@@ -15,7 +17,7 @@ const UserManagement = () => {
     },
     [mutateAsync]
   );
-  const columns = useMemo(
+  const columns = useMemo<Column<Partial<User>>[]>(
     () => [
       {
         Header: "FULL NAME",
@@ -27,7 +29,7 @@ const UserManagement = () => {
       },
       {
         Header: "PHONE NUMBER",
-        accessor: "phone",
+        accessor: "phoneNumber",
       },
       {
         Header: "ADDRESS",
@@ -35,7 +37,7 @@ const UserManagement = () => {
       },
       {
         Header: "JOINED DATE",
-        accessor: "",
+        accessor: "createdAt",
       },
     ],
     []
