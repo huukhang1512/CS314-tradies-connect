@@ -25,6 +25,7 @@ import { type Service } from "@prisma/client";
 import { useFormik } from "formik";
 import { useCallback, useMemo, useState } from "react";
 import { MdUpdate } from "react-icons/md";
+import { type Column } from "react-table";
 
 const ServicePopup = ({
   isOpen,
@@ -151,7 +152,7 @@ const ServiceMangement = () => {
     },
     [getServices]
   );
-  const columns = useMemo(
+  const columns = useMemo<Column<Service>[]>(
     () => [
       {
         Header: "SERVICE NAME",

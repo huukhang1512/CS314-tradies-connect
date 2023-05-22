@@ -2,13 +2,13 @@ import SidebarWithHeader from "@/components/SidebarWithHeader";
 import { Portal } from "@/components/SidebarWithHeader";
 import CustomTable from "@/components/Table";
 import { api } from "@/utils/api";
-import { Card } from "@chakra-ui/react";
-import { type User } from "@prisma/client";
+import { Badge, Card } from "@chakra-ui/react";
+import { Payment, PaymentStatus } from "@prisma/client";
 import { useCallback, useMemo, useState } from "react";
 import { type Column } from "react-table";
 
-const UserManagement = () => {
-  const { mutateAsync } = api.users.getUsers.useMutation();
+const Payment = () => {
+  const { mutateAsync } = api.payments.paginatedGetUserPayments.useMutation();
   const [forceRefetch] = useState(true);
 
   const getData = useCallback(
@@ -17,26 +17,35 @@ const UserManagement = () => {
     },
     [mutateAsync]
   );
-  const columns = useMemo<Column<User>[]>(
+  const columns = useMemo<Column<Payment>[]>(
     () => [
       {
-        Header: "FULL NAME",
-        accessor: "name",
+        Header: "PAYMENT TYPE",
+        accessor: "paymentType",
       },
       {
-        Header: "EMAIL",
-        accessor: "email",
+        Header: "AMOUNT",
+        accessor: "amount",
+        Cell: ({ value }) => {
+          return <>${value}</>;
+        },
       },
       {
-        Header: "PHONE NUMBER",
-        accessor: "phoneNumber",
+        Header: "STATUS",
+        accessor: "paymentStatus",
+        Cell: ({ value }) => {
+          switch (value) {
+            case PaymentStatus.COMPLETED:
+              return <Badge colorScheme={"green"}>{value}</Badge>;
+            case PaymentStatus.PENDING:
+              return <Badge colorScheme={"gray"}>{value}</Badge>;
+            default:
+              return <Badge colorScheme={"red"}>{value}</Badge>;
+          }
+        },
       },
       {
-        Header: "ADDRESS",
-        accessor: "address",
-      },
-      {
-        Header: "JOINED DATE",
+        Header: "DATE",
         accessor: "createdAt",
         Cell: ({ value }) => <>{value.toLocaleDateString()}</>,
       },
@@ -45,7 +54,7 @@ const UserManagement = () => {
   );
 
   return (
-    <SidebarWithHeader portal={Portal.ADMIN}>
+    <SidebarWithHeader portal={Portal.PROFILE}>
       <Card p={5}>
         <CustomTable
           refetchState={forceRefetch}
@@ -57,5 +66,5 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default Payment;
 export { getServerSidePropsWithAuth as getServerSideProps } from "@/components/getServerSidePropsWithAuth";

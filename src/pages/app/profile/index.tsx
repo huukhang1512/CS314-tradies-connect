@@ -27,7 +27,7 @@ import { api } from "@/utils/api";
 import { useFormik } from "formik";
 import { useState } from "react";
 import { AiOutlineCheck, AiOutlineClose } from "react-icons/ai";
-import { type Service } from "@prisma/client";
+import { MembershipType, type Service } from "@prisma/client";
 import { TbCurrentLocation } from "react-icons/tb";
 import { reverseGeocode } from "@/utils/location/locationService";
 
@@ -41,10 +41,9 @@ const Profile = () => {
   const { data: providedServicesData } =
     api.services.getUserProvidedServices.useQuery();
   const { data: services } = api.services.getServices.useQuery();
-  const { data: userData } = api.users.getUser.useQuery({
-    id: sessionData?.user.id || "",
-  });
-
+  const { data: userData } = api.users.me.useQuery();
+  const { data: activeMemberships } =
+    api.memberships.getUserActiveMembership.useQuery();
   const { mutateAsync: getServicesByName, isLoading: isGettingServiceByName } =
     api.services.getServicesByName.useMutation();
   const { mutateAsync: editUserDetail } = api.users.updateUser.useMutation();
@@ -81,6 +80,7 @@ const Profile = () => {
       address: userData?.address || "",
       lat: userData?.lat || "",
       lng: userData?.lng || "",
+      phoneNumber: userData?.phoneNumber || "",
       providedServices:
         providedServicesData?.providedServices.map((service) =>
           serviceToSelectValue(service)
@@ -94,6 +94,7 @@ const Profile = () => {
         name: values.name,
         lat: values.lat,
         lng: values.lng,
+        phoneNumber: values.phoneNumber,
         address: values.address,
         providedServices: values.providedServices.map(
           (service) => service.label
@@ -115,7 +116,8 @@ const Profile = () => {
     void formik.setFieldValue("providedServices", e);
   };
 
-  if (!services || !sessionData || !providedServicesData) return <></>;
+  if (!services || !sessionData || !providedServicesData || !activeMemberships)
+    return <></>;
   return (
     <SidebarWithHeader portal={Portal.PROFILE}>
       <VStack bg={"white"} rounded={"md"}>
@@ -149,16 +151,28 @@ const Profile = () => {
               </Circle>
               <VStack align={"flex-start"}>
                 <Heading size={"lg"}>{sessionData.user.name}</Heading>
-                <HStack spacing={5}>
-                  <Text color={"text.secondary"}>Customer</Text>
-                  <Divider
-                    color={"background.gray"}
-                    h={5}
-                    orientation="vertical"
-                  />
-                  <Text color={"text.secondary"}>
-                    Premium plan (Start date: 10/03/2023)
-                  </Text>
+                <HStack>
+                  {activeMemberships?.map((activeMembership, i) => (
+                    <>
+                      <Text
+                        color={"text.secondary"}
+                        key={`${activeMembership.membershipId}_${activeMembership.userId}`}
+                      >
+                        {activeMembership.membership.type} plan (Next Billing
+                        Date:{" "}
+                        {activeMembership.expiredAt &&
+                          activeMembership.expiredAt.toLocaleDateString()}
+                        )
+                      </Text>
+                      {i < activeMemberships.length - 1 && (
+                        <Divider
+                          color={"background.gray"}
+                          h={5}
+                          orientation="vertical"
+                        />
+                      )}
+                    </>
+                  ))}
                 </HStack>
               </VStack>
             </HStack>
@@ -208,7 +222,23 @@ const Profile = () => {
                 />
               </FormControl>
             </GridItem>
-            {/* TODO(khang): Read address from user db*/}
+            <GridItem>
+              <FormControl>
+                <FormLabel>Phone Number</FormLabel>
+                <Input
+                  id={"phoneNumber"}
+                  name={"phoneNumber"}
+                  type={"tel"}
+                  onChange={formik.handleChange}
+                  variant={"filled"}
+                  bg={"background.gray"}
+                  borderColor={"text.disable"}
+                  borderWidth={1}
+                  isReadOnly={isReadOnly}
+                  value={formik.values.phoneNumber}
+                />
+              </FormControl>
+            </GridItem>
             <GridItem>
               <FormControl>
                 <FormLabel>Address</FormLabel>
@@ -239,27 +269,31 @@ const Profile = () => {
                 </InputGroup>
               </FormControl>
             </GridItem>
-            <GridItem>
-              {/* TODO(khang): make this field readonly if user isn't register as tradies */}
-              <FormControl>
-                <FormLabel>Provided Services</FormLabel>
-                <AsyncSelect
-                  id={"providedServices"}
-                  name={"providedServices"}
-                  isMulti
-                  isReadOnly={isReadOnly}
-                  isClearable={!isReadOnly}
-                  isLoading={isGettingServiceByName}
-                  loadOptions={searchServices}
-                  onChange={handleSelectChange}
-                  value={formik.values.providedServices}
-                  defaultOptions={services.map((service) => ({
-                    label: service.name,
-                    value: service.name,
-                  }))}
-                />
-              </FormControl>
-            </GridItem>
+            {activeMemberships?.some(
+              (activeMembership) =>
+                activeMembership.membership.type === MembershipType.PROVIDER
+            ) && (
+              <GridItem>
+                <FormControl>
+                  <FormLabel>Provided Services</FormLabel>
+                  <AsyncSelect
+                    id={"providedServices"}
+                    name={"providedServices"}
+                    isMulti
+                    isReadOnly={isReadOnly}
+                    isClearable={!isReadOnly}
+                    isLoading={isGettingServiceByName}
+                    loadOptions={searchServices}
+                    onChange={handleSelectChange}
+                    value={formik.values.providedServices}
+                    defaultOptions={services.map((service) => ({
+                      label: service.name,
+                      value: service.name,
+                    }))}
+                  />
+                </FormControl>
+              </GridItem>
+            )}
             {!isReadOnly && (
               <GridItem colSpan={2}>
                 <HStack justify={"end"}>
