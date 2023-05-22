@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { prisma } from "@/server/db";
 import {
   adminProcedure,
   createTRPCRouter,
@@ -30,6 +29,7 @@ export const serviceRouter = createTRPCRouter({
   createNewService: adminProcedure
     .input(CreateNewServiceRequest)
     .mutation(async (req) => {
+      const { prisma } = req.ctx;
       const { input } = req;
       return await prisma.service.create({
         data: {
@@ -43,6 +43,7 @@ export const serviceRouter = createTRPCRouter({
   updateService: adminProcedure
     .input(UpdateServiceRequest)
     .mutation(async (req) => {
+      const { prisma } = req.ctx;
       const { input } = req;
       const { name, rate, description } = input;
       return await prisma.service.update({
@@ -60,21 +61,24 @@ export const serviceRouter = createTRPCRouter({
   getUserProvidedServices: protectedProcedure.query(async (req) => {
     const { ctx } = req;
     const { id } = ctx.session.user;
+    const { prisma } = ctx;
     return await prisma.user.findUnique({
       where: { id },
-      select: {
+      include: {
         providedServices: true,
       },
     });
   }),
 
-  getServices: protectedProcedure.query(async () => {
+  getServices: protectedProcedure.query(async (req) => {
+    const { prisma } = req.ctx;
     return await prisma.service.findMany();
   }),
 
   paginatedGetServices: adminProcedure
     .input(PaginatedInput)
     .mutation(async (req) => {
+      const { prisma } = req.ctx;
       const services = await prisma.service.findMany({
         skip: (req.input.page - 1) * req.input.perPage,
         take: req.input.perPage,
@@ -92,6 +96,7 @@ export const serviceRouter = createTRPCRouter({
     .input(GetServicesByNameRequest)
     .mutation(async (req) => {
       const { input } = req;
+      const { prisma } = req.ctx;
       return await prisma.service.findMany({
         where: {
           name: {
