@@ -5,16 +5,12 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
+import { PaginatedInput } from "@/types/paginatedInput";
 
 export const ServiceSchema = z.object({
   name: z.string(),
   rate: z.number(),
   description: z.string(),
-});
-
-const PaginatedGetServiceInput = z.object({
-  page: z.number().positive().default(1),
-  perPage: z.number().positive().default(10),
 });
 
 const GetServicesByNameRequest = z.string();
@@ -64,7 +60,7 @@ export const serviceRouter = createTRPCRouter({
   getUserProvidedServices: protectedProcedure.query(async (req) => {
     const { ctx } = req;
     const { id } = ctx.session.user;
-    return await prisma.user.findFirst({
+    return await prisma.user.findUnique({
       where: { id },
       select: {
         providedServices: true,
@@ -77,7 +73,7 @@ export const serviceRouter = createTRPCRouter({
   }),
 
   paginatedGetServices: adminProcedure
-    .input(PaginatedGetServiceInput)
+    .input(PaginatedInput)
     .mutation(async (req) => {
       const services = await prisma.service.findMany({
         skip: (req.input.page - 1) * req.input.perPage,

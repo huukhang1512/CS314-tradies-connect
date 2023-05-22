@@ -3,12 +3,12 @@ import { Portal } from "@/components/SidebarWithHeader";
 import CustomTable from "@/components/Table";
 import { api } from "@/utils/api";
 import { Card } from "@chakra-ui/react";
-import { type User } from "@prisma/client";
+import { type Membership } from "@prisma/client";
 import { useCallback, useMemo, useState } from "react";
 import { type Column } from "react-table";
 
-const UserManagement = () => {
-  const { mutateAsync } = api.users.getUsers.useMutation();
+const MembershipManagement = () => {
+  const { mutateAsync } = api.memberships.getMemberships.useMutation();
   const [forceRefetch] = useState(true);
 
   const getData = useCallback(
@@ -17,26 +17,25 @@ const UserManagement = () => {
     },
     [mutateAsync]
   );
-  const columns = useMemo<Column<User>[]>(
+  const columns = useMemo<Column<Membership>[]>(
     () => [
       {
-        Header: "FULL NAME",
-        accessor: "name",
+        Header: "ID",
+        accessor: "id",
       },
       {
-        Header: "EMAIL",
-        accessor: "email",
+        Header: "TYPE",
+        accessor: "type",
       },
       {
-        Header: "PHONE NUMBER",
-        accessor: "phoneNumber",
+        Header: "AMOUNT",
+        accessor: "price",
+        Cell: ({ value }) => {
+          return <>${value}</>;
+        },
       },
       {
-        Header: "ADDRESS",
-        accessor: "address",
-      },
-      {
-        Header: "JOINED DATE",
+        Header: "DATE",
         accessor: "createdAt",
         Cell: ({ value }) => <>{value.toLocaleDateString()}</>,
       },
@@ -46,7 +45,7 @@ const UserManagement = () => {
 
   return (
     <SidebarWithHeader portal={Portal.ADMIN}>
-      <Card p={5}>
+      <Card p={5} w={"full"}>
         <CustomTable
           refetchState={forceRefetch}
           getData={getData}
@@ -57,5 +56,5 @@ const UserManagement = () => {
   );
 };
 
-export default UserManagement;
+export default MembershipManagement;
 export { getServerSidePropsWithAuth as getServerSideProps } from "@/components/getServerSidePropsWithAuth";
