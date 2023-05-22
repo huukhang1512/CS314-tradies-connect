@@ -26,7 +26,7 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BsCheckCircle, BsInfoCircle, BsStar } from "react-icons/bs";
 import { AiOutlineMessage } from "react-icons/ai";
 import { RequestStatus } from "@prisma/client";
@@ -99,35 +99,33 @@ const RespondersPopUp = (props: RespondersPopUpProps) => {
   if (request) {
     return (
       <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
-      <ModalOverlay />
-      <ModalContent p={3}>
-        <HStack alignItems={"center"} justify={"space-between"} p={3}>
-          <ModalHeader whiteSpace={"nowrap"} p={0}>
-            Responders
-          </ModalHeader>
-          <IconButton
-            icon={<CloseIcon />}
-            onClick={() => onClose()}
-            size={"xs"}
-            borderColor={"gray"}
-            borderWidth={2}
-            p={0}
-            aria-label={"Close modal"}
-            isRound
-            variant={"ghost"}
-          />
-        </HStack>
-        <ModalBody p={3}>
-          <VStack spacing={3}>
-          </VStack>
-        </ModalBody>
-      </ModalContent>
-    </Modal>
-
-    )
+        <ModalOverlay />
+        <ModalContent p={3}>
+          <HStack alignItems={"center"} justify={"space-between"} p={3}>
+            <ModalHeader whiteSpace={"nowrap"} p={0}>
+              Responders
+            </ModalHeader>
+            <IconButton
+              icon={<CloseIcon />}
+              onClick={() => onClose()}
+              size={"xs"}
+              borderColor={"gray"}
+              borderWidth={2}
+              p={0}
+              aria-label={"Close modal"}
+              isRound
+              variant={"ghost"}
+            />
+          </HStack>
+          <ModalBody p={3}>
+            <VStack spacing={3}></VStack>
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+    );
   }
-  return <></>
-}
+  return <></>;
+};
 
 type MarkAsCompletePopUpProps = {
   isOpen: boolean;
@@ -187,7 +185,6 @@ type RatingPopUpProps = {
   request?: Request;
 };
 
-
 const RatingPopup = (props: RatingPopUpProps) => {
   const { isOpen, onClose, onSubmit, request } = props;
 
@@ -224,26 +221,26 @@ const RatingPopup = (props: RatingPopUpProps) => {
               variant={"ghost"}
             />
           </HStack>
-          <HStack
-              alignItems={"center"}
-              justify={"space-between"}
-              paddingX={3}
-            >
-              <Text fontSize={"sm"} color={"gray"}>
-                Request ID: <b>{request.id}</b> | Created date:{" "}
-                <b>{request.createdAt.toLocaleDateString("en-AU")}</b>
-              </Text>
-            </HStack>
+          <HStack alignItems={"center"} justify={"space-between"} paddingX={3}>
+            <Text fontSize={"sm"} color={"gray"}>
+              Request ID: <b>{request.id}</b> | Created date:{" "}
+              <b>{request.createdAt.toLocaleDateString("en-AU")}</b>
+            </Text>
+          </HStack>
           <ModalBody p={3}>
-
             <form onSubmit={formik.handleSubmit}>
               <VStack spacing={3}>
                 <FormControl>
-                  <FormLabel>What do you think about the service provider and their services ?</FormLabel>
+                  <FormLabel>
+                    What do you think about the service provider and their
+                    services ?
+                  </FormLabel>
                   <Rating
                     size={48}
                     name={"rating"}
-                    onChange={(value) => void formik.setFieldValue("rating", value)}
+                    onChange={(value) =>
+                      void formik.setFieldValue("rating", value)
+                    }
                     value={formik.values.rating}
                     maxRating={5}
                   />
@@ -263,11 +260,7 @@ const RatingPopup = (props: RatingPopUpProps) => {
                     value={formik.values.comment}
                   />
                 </FormControl>
-                <Button
-                  variant={"primary"}
-                  w={"full"}
-                  type={"submit"}
-                >
+                <Button variant={"primary"} w={"full"} type={"submit"}>
                   Submit
                 </Button>
               </VStack>
@@ -304,39 +297,25 @@ const RequestPopup = ({
   onSubmit,
   onCancel,
 }: RequestPopupProps) => {
-  let { data: services } = api.services.getServices.useQuery();
-  useEffect( () => {
-    if (services === undefined) {
-      services = [];
-    } else if (services !== undefined && services.length > 0) {
-      let defaultService = "";
-      if (services !== undefined && services.length > 0) {
-        defaultService = services[0]?.name || "";
-      }
-      const setDefaultServiceName = () => void formik.setFieldValue("serviceName", defaultService);
-      void setDefaultServiceName();
-    }
-  }, [services]);
+  const { data: services } = api.services.getServices.useQuery();
 
   const initialValues = useMemo<InputType>(() => {
-    let initialValues: InputType;
     if (mode === "update" && request !== undefined) {
-      initialValues = {
+      return {
         serviceName: request.serviceName,
         description: request.description,
         unit: request.unit,
         id: request.id,
       };
     } else {
-      initialValues = {
-        serviceName: "",
+      return {
+        serviceName: services?.at(0)?.name || "",
         description: "",
         unit: 0,
         id: "",
       };
     }
-    return initialValues;
-  }, [mode, request]);
+  }, [mode, request, services]);
 
   const formik = useFormik<InputType>({
     enableReinitialize: true,
@@ -427,20 +406,25 @@ const RequestPopup = ({
                   h={300}
                 />
               </FormControl>
-              {( mode === "create" ||
-              request?.status == RequestStatus.BROADCASTED || 
-              request?.status == RequestStatus.IN_PROGRESS) && (
+              {(mode === "create" ||
+                request?.status == RequestStatus.BROADCASTED ||
+                request?.status == RequestStatus.IN_PROGRESS) && (
                 <Button variant={"primary"} w={"full"} type={"submit"}>
                   {mode === "create" ? "Submit" : "Edit"}
                 </Button>
               )}
-              {mode === "update" && onCancel 
-              && (request?.status == RequestStatus.BROADCASTED 
-              || request?.status == RequestStatus.IN_PROGRESS) && (
-                <Button variant={"outline"} w={"full"} onClick={() => onCancel(request?.id)}>
-                  Cancel Request
-                </Button>
-              )}
+              {mode === "update" &&
+                onCancel &&
+                (request?.status == RequestStatus.BROADCASTED ||
+                  request?.status == RequestStatus.IN_PROGRESS) && (
+                  <Button
+                    variant={"outline"}
+                    w={"full"}
+                    onClick={() => onCancel(request?.id)}
+                  >
+                    Cancel Request
+                  </Button>
+                )}
             </VStack>
           </form>
         </ModalBody>
@@ -458,10 +442,8 @@ const Client = () => {
     api.requests.updateRequest.useMutation();
   const { mutateAsync: cancelRequest } =
     api.requests.cancelRequest.useMutation();
-  const { mutateAsync: completeJob } =
-    api.jobs.completeJob.useMutation();
-  const { mutateAsync: rateProvider } = 
-    api.rating.createRating.useMutation();
+  const { mutateAsync: completeJob } = api.jobs.completeJob.useMutation();
+  const { mutateAsync: rateProvider } = api.rating.createRating.useMutation();
   const { mutateAsync: acceptProposal } =
     api.proposals.acceptProposal.useMutation();
   const [openCreate, setOpenCreate] = useState(false);
@@ -584,7 +566,7 @@ const Client = () => {
         isOpen={openComplete}
         onClose={() => setOpenComplete(false)}
         onSubmit={async () => {
-          await completeJob({id: selectedRequest?.id || ""});
+          await completeJob({ id: selectedRequest?.id || "" });
           setOpenComplete(false);
           setForceRefetch(true);
         }}
@@ -604,7 +586,10 @@ const Client = () => {
         onClose={() => setOpenResponders(false)}
         request={selectedRequest}
         onSubmit={async (responder: AcceptProposalInputType) => {
-          await acceptProposal({ requestId: selectedRequest?.id || "", responderId: responder.responderId });
+          await acceptProposal({
+            requestId: selectedRequest?.id || "",
+            responderId: responder.responderId,
+          });
           setOpenResponders(false);
           setForceRefetch(true);
         }}
@@ -613,9 +598,11 @@ const Client = () => {
         <VStack bg={"white"} rounded={"md"} p={5} spacing={5} w={"full"}>
           <HStack justify={"space-between"} w={"full"}>
             <Heading size={"md"}>Request table</Heading>
-            <Button variant={"primary"} onClick={() => {
-              setSelectedRequest(undefined)
-              setOpenCreate(true)
+            <Button
+              variant={"primary"}
+              onClick={() => {
+                setSelectedRequest(undefined);
+                setOpenCreate(true);
               }}
             >
               Add new request
