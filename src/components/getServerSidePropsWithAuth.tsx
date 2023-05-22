@@ -27,6 +27,13 @@ export const getServerSidePropsWithAuth = async (
     return { redirect: { destination: "/403" } };
   }
 
+  if (
+    context.resolvedUrl === "/app/client" &&
+    session?.user.role === Role.USER
+  ) {
+    return { redirect: { destination: "/app/client/requests" } };
+  }
+
   return {
     props: { session },
   };
