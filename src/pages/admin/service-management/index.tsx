@@ -54,7 +54,7 @@ const ServicePopup = ({
     },
   });
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
       <ModalOverlay />
       <ModalContent p={3}>
         <HStack alignItems={"center"} justify={"space-between"} p={3}>
@@ -117,6 +117,7 @@ const ServicePopup = ({
                   borderColor={"text.disable"}
                   borderWidth={1}
                   value={formik.values.description}
+                  h={300}
                 />
               </FormControl>
               <Button

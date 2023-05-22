@@ -84,7 +84,7 @@ model Request {
     serviceName String
     service     Service       @relation(fields: [serviceName], references: [name], onDelete: Cascade)
     description String
-    status      RequestStatus @default(NEW)
+    status      RequestStatus @default(BROADCASTED)
     createdAt   DateTime      @default(now())
     unit        Int
     price       Float
@@ -99,6 +99,7 @@ model Proposal {
     provider   User           @relation(fields: [providerId], references: [id], onDelete: Cascade)
     status     ProposalStatus @default(NEW)
     jobs       Job[]
+    @@unique([requestId, providerId])
 }
 
 model Job {
@@ -107,7 +108,7 @@ model Job {
     proposal     Proposal       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
     status       ProposalStatus @default(NEW)
     startedDate  DateTime       @default(now())
-    finishedDate DateTime
+    finishedDate DateTime?
     review       Review[]
     payment      Payment[]
 }
@@ -183,7 +184,6 @@ enum Role {
 }
 
 enum RequestStatus {
-    NEW
     BROADCASTED
     IN_PROGRESS
     COMPLETED

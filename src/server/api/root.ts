@@ -4,6 +4,7 @@ import { serviceRouter } from "./routers/service";
 import { requestRouter } from "./routers/request";
 import { proposalRouter } from "./routers/proposal";
 import { jobRouter } from "./routers/job";
+import { ratingRouter } from "./routers/rating";
 import { membershipRouter } from "./routers/membership";
 import { paymentRouter } from "./routers/payment";
 
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   requests: requestRouter,
   proposals: proposalRouter,
   jobs: jobRouter,
+  rating: ratingRouter,
   memberships: membershipRouter,
   payments: paymentRouter,
 });

@@ -46,7 +46,7 @@ export const PaymentPopup = ({
       .replace(/\s+/g, "")
       .replace(/[^0-9]/gi, "")
       .slice(0, 16);
-    const parts = [];
+    const parts: string[] = [];
 
     for (let i = 0; i < v.length; i += 4) {
       parts.push(v.slice(i, i + 4));

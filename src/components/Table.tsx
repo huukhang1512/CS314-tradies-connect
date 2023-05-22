@@ -40,6 +40,7 @@ export interface RowAction<T> {
   callback: (row: T) => void;
   actionName: string;
   icon?: JSX.Element;
+  shouldRender? : (row: T) => boolean;
 }
 export interface TableProps<T extends object> {
   columns: Column<T>[];
@@ -86,7 +87,7 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
   const instance = useTable<T>(
     {
       columns,
-      data: data.data,
+      data: data?.data || [],
       state: {
         pagination,
       },
@@ -123,7 +124,8 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
                   <Th
                     {...column.getHeaderProps()}
                     color="white"
-                    key={`col-header-${j}`}
+                    key={`col-header-${j}`
+                  }
                   >
                     {column.render("Header")}
                   </Th>
@@ -138,7 +140,13 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
               return (
                 <Tr {...row.getRowProps()} key={`row-${i}`}>
                   {row.cells.map((cell, j) => (
-                    <Td {...cell.getCellProps()} key={`cell-${j}`}>
+                    <Td 
+                    {...cell.getCellProps()} 
+                    key={`cell-${j}`}
+                    maxW={"400px"}
+                    overflow={"hidden"}
+                    textOverflow={"ellipsis"}
+                    >
                       {cell.render("Cell")}
                     </Td>
                   ))}
@@ -146,7 +154,7 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
                     <Td>
                       <VStack spacing={2} align={"flex-start"}>
                         {actions.map((action) => (
-                          <Button
+                          (action.shouldRender === undefined || action.shouldRender(row.values as T)) && <Button
                             leftIcon={action.icon}
                             variant={"link"}
                             onClick={() => action.callback(row.values as T)}
@@ -168,7 +176,7 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
         <Text flexShrink="0" color="text.third" mt={3}>
           Showing{" "}
           <Text as="span">
-            {pageIndex * pageSize + 1}
+            {data?.total === 0 ? 0 : (pageIndex - 1) * pageSize + 1}
             {"-"}
             {Math.min((pageIndex + 1) * pageSize, data?.total)}
           </Text>{" "}
