@@ -57,7 +57,7 @@ model User {
     receivedReviews  Review[]     @relation("receivedReviews")
     payments         Payment[]
     createdAt        DateTime     @default(now())
-    phoneNumber      Int?
+    phoneNumber      String?
 }
 
 model Service {

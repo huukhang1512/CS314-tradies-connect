@@ -6,7 +6,7 @@ import {
   protectedProcedure,
 } from "@/server/api/trpc";
 import { Role } from "@prisma/client";
-import { ServiceSchema } from "./service";
+import { PaginatedInput } from "@/types/paginatedInput";
 
 export const User = z.object({
   id: z.string(),
@@ -15,11 +15,8 @@ export const User = z.object({
   address: z.string().nullable(),
   lat: z.string().nullable(),
   lng: z.string().nullable(),
-});
-
-const PaginatedGetUsersInput = z.object({
-  page: z.number().positive().default(1),
-  perPage: z.number().positive().default(10),
+  phoneNumber: z.string().nullable(),
+  createdAt: z.date().nullable(),
 });
 
 const PaginatedGetUsersOutput = z.object({
@@ -29,36 +26,26 @@ const PaginatedGetUsersOutput = z.object({
   data: z.array(User),
 });
 
-const UpdateUserInput = User.extend({
+const UpdateUserInput = z.object({
+  id: z.string(),
+  email: z.string(),
+  name: z.string(),
+  lat: z.string(),
+  lng: z.string(),
+  address: z.string(),
+  phoneNumber: z.string(),
   providedServices: z.string().array().optional(),
 });
 
-const UpdateUserOutput = z.object({
-  data: User.extend({
-    providedServices: ServiceSchema.array(),
-  }),
-});
-
-export type PaginatedQueryInputType = z.infer<typeof PaginatedGetUsersInput>;
 export type PaginatedQueryOutputType = z.infer<typeof PaginatedGetUsersOutput>;
 
 export const userRouter = createTRPCRouter({
   getUsers: adminProcedure
-    .meta({ openapi: { method: "GET", path: "/users" } })
-    .input(PaginatedGetUsersInput)
-    .output(PaginatedGetUsersOutput)
+    .input(PaginatedInput)
     .mutation(async (req) => {
       const users = await prisma.user.findMany({
         skip: (req.input.page - 1) * req.input.perPage,
         take: req.input.perPage,
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          address: true,
-          lat: true,
-          lng: true,
-        },
         where: {
           role: {
             not: Role.ADMIN,
@@ -85,13 +72,7 @@ export const userRouter = createTRPCRouter({
       where: {
         id: session.user.id,
       },
-      select: {
-        id: true,
-        email: true,
-        address: true,
-        lat: true,
-        lng: true,
-        name: true,
+      include: {
         memberships: true,
       },
     });
@@ -102,14 +83,20 @@ export const userRouter = createTRPCRouter({
   }),
 
   updateUser: protectedProcedure
-    .meta({ openapi: { method: "PUT", path: "/users/:id" } })
     .input(UpdateUserInput)
-    .output(UpdateUserOutput)
     .mutation(async (req) => {
       const { ctx } = req;
       const { session } = ctx;
-      const { id, email, name, providedServices, address, lat, lng } =
-        req.input;
+      const {
+        id,
+        email,
+        name,
+        providedServices,
+        address,
+        lat,
+        lng,
+        phoneNumber,
+      } = req.input;
       if (session.user.id !== req.input.id) {
         throw new Error("Only user can change their details");
       }
@@ -134,17 +121,12 @@ export const userRouter = createTRPCRouter({
           address,
           lat,
           lng,
+          phoneNumber,
           providedServices: {
             set: validServices,
           },
         },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          address: true,
-          lat: true,
-          lng: true,
+        include: {
           providedServices: true,
         },
       });

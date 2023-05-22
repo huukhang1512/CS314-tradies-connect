@@ -2,12 +2,29 @@ import { z } from "zod";
 import { prisma } from "@/server/db";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { MembershipType, PaymentStatus, PaymentType } from "@prisma/client";
+import { PaginatedInput } from "@/types/paginatedInput";
 
 const SubscribeToMembershipInput = z.object({
   membershipId: z.string(),
 });
 
 export const membershipRouter = createTRPCRouter({
+  getMemberships: protectedProcedure
+    .input(PaginatedInput)
+    .mutation(async (req) => {
+      const memberships = await prisma.membership.findMany({
+        skip: (req.input.page - 1) * req.input.perPage,
+        take: req.input.perPage,
+      });
+      const total = await prisma.membership.count();
+      return {
+        total,
+        page: req.input.page,
+        perPage: req.input.perPage,
+        data: memberships,
+      };
+    }),
+
   getClientMemberships: protectedProcedure.query(async () => {
     return await prisma.membership.findMany({
       where: {

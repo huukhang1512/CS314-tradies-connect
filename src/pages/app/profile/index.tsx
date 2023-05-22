@@ -79,6 +79,7 @@ const Profile = () => {
       address: userData?.address || "",
       lat: userData?.lat || "",
       lng: userData?.lng || "",
+      phoneNumber: userData?.phoneNumber || "",
       providedServices:
         providedServicesData?.providedServices.map((service) =>
           serviceToSelectValue(service)
@@ -92,6 +93,7 @@ const Profile = () => {
         name: values.name,
         lat: values.lat,
         lng: values.lng,
+        phoneNumber: values.phoneNumber,
         address: values.address,
         providedServices: values.providedServices.map(
           (service) => service.label
@@ -203,6 +205,23 @@ const Profile = () => {
                   borderWidth={1}
                   isReadOnly={isReadOnly}
                   value={formik.values.name}
+                />
+              </FormControl>
+            </GridItem>
+            <GridItem>
+              <FormControl>
+                <FormLabel>Phone Number</FormLabel>
+                <Input
+                  id={"phoneNumber"}
+                  name={"phoneNumber"}
+                  type={"tel"}
+                  onChange={formik.handleChange}
+                  variant={"filled"}
+                  bg={"background.gray"}
+                  borderColor={"text.disable"}
+                  borderWidth={1}
+                  isReadOnly={isReadOnly}
+                  value={formik.values.phoneNumber}
                 />
               </FormControl>
             </GridItem>

@@ -4,12 +4,8 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
-import { z } from "zod";
+import { PaginatedInput } from "@/types/paginatedInput";
 
-const PaginatedGetPaymentsInput = z.object({
-  page: z.number().positive().default(1),
-  perPage: z.number().positive().default(10),
-});
 export const paymentRouter = createTRPCRouter({
   getUserPayments: protectedProcedure.query(async (req) => {
     return await prisma.payment.findMany({
@@ -20,9 +16,9 @@ export const paymentRouter = createTRPCRouter({
   }),
 
   paginatedGetUserPayments: protectedProcedure
-    .input(PaginatedGetPaymentsInput)
+    .input(PaginatedInput)
     .mutation(async (req) => {
-      const services = await prisma.payment.findMany({
+      const payments = await prisma.payment.findMany({
         where: {
           userId: req.ctx.session.user.id,
         },
@@ -34,23 +30,24 @@ export const paymentRouter = createTRPCRouter({
         total,
         page: req.input.page,
         perPage: req.input.perPage,
-        data: services,
+        data: payments,
       };
     }),
 
-  getPayments: adminProcedure
-    .input(PaginatedGetPaymentsInput)
-    .mutation(async (req) => {
-      const services = await prisma.payment.findMany({
-        skip: (req.input.page - 1) * req.input.perPage,
-        take: req.input.perPage,
-      });
-      const total = await prisma.payment.count();
-      return {
-        total,
-        page: req.input.page,
-        perPage: req.input.perPage,
-        data: services,
-      };
-    }),
+  getPayments: adminProcedure.input(PaginatedInput).mutation(async (req) => {
+    const payments = await prisma.payment.findMany({
+      include: {
+        User: true,
+      },
+      skip: (req.input.page - 1) * req.input.perPage,
+      take: req.input.perPage,
+    });
+    const total = await prisma.payment.count();
+    return {
+      total,
+      page: req.input.page,
+      perPage: req.input.perPage,
+      data: payments,
+    };
+  }),
 });

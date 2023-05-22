@@ -148,7 +148,7 @@ export default function SidebarWithHeader(props: SidebarWithHeaderProps) {
         </DrawerContent>
       </Drawer>
       {/* mobilenav */}
-      <VStack pos={"relative"} w={"full"} h={"full"}>
+      <VStack pos={"relative"} w={"full"} h={"full"} overflow={"auto"}>
         <MobileNav onOpen={onOpen} portal={portal} curPage={router.pathname} />
         <Box p="4" w={"full"} h={"full"} overflow={"auto"}>
           {children}
