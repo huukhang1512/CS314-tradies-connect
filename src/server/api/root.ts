@@ -3,10 +3,10 @@ import { userRouter } from "./routers/user";
 import { serviceRouter } from "./routers/service";
 import { requestRouter } from "./routers/request";
 import { proposalRouter } from "./routers/proposal";
-import { jobRouter } from "./routers/job";
+import { jobRouter } from "./routers/job/job";
 import { ratingRouter } from "./routers/rating";
 import { membershipRouter } from "./routers/membership";
-import { paymentRouter } from "./routers/payment";
+import { paymentRouter } from "./routers/payment/payment";
 
 /**
  * This is the primary router for your server.

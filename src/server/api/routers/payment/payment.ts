@@ -1,4 +1,3 @@
-import { prisma } from "@/server/db";
 import {
   adminProcedure,
   createTRPCRouter,
@@ -8,6 +7,7 @@ import { PaginatedInput } from "@/types/paginatedInput";
 
 export const paymentRouter = createTRPCRouter({
   getUserPayments: protectedProcedure.query(async (req) => {
+    const { prisma } = req.ctx;
     return await prisma.payment.findMany({
       where: {
         userId: req.ctx.session.user.id,
@@ -18,6 +18,8 @@ export const paymentRouter = createTRPCRouter({
   paginatedGetUserPayments: protectedProcedure
     .input(PaginatedInput)
     .mutation(async (req) => {
+      const { prisma } = req.ctx;
+
       const payments = await prisma.payment.findMany({
         where: {
           userId: req.ctx.session.user.id,
@@ -35,6 +37,7 @@ export const paymentRouter = createTRPCRouter({
     }),
 
   getPayments: adminProcedure.input(PaginatedInput).mutation(async (req) => {
+    const { prisma } = req.ctx;
     const payments = await prisma.payment.findMany({
       include: {
         User: true,
