@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { PaymentPopup } from "../PaymentPopup";
 import { api } from "@/utils/api";
-import { type Membership } from "@prisma/client";
+import { type UserMembership, type Membership } from "@prisma/client";
 import { BaseMembershipCard } from "./BaseMembershipCard";
+import { useRouter } from "next/router";
 
-export const ClientMembership = () => {
+export const ClientMembership = ({
+  activeMemberships,
+}: {
+  activeMemberships: UserMembership[];
+}) => {
+  const router = useRouter();
   const [isPurchasingPopup, setIsPurchasingPopup] = useState(false);
   const [chosenMembership, setChosenMembership] = useState<Membership>();
-  const { data: userData, isLoading: isLoadingUserData } =
-    api.users.me.useQuery();
   const { data: membershipData, isLoading: isLoadingMembership } =
     api.memberships.getClientMemberships.useQuery();
   const { mutateAsync } = api.memberships.subscribeToMembership.useMutation();
@@ -20,13 +24,10 @@ export const ClientMembership = () => {
 
   const subscribeToMembership = async () => {
     await mutateAsync({ membershipId: chosenMembership?.id || "" });
-    setIsPurchasingPopup(false);
+    await router.push("/app/client");
   };
 
-  const hasPurchased = (membershipId: string) =>
-    !!userData?.memberships.map((mem) => mem.id).includes(membershipId);
-
-  if (isLoadingMembership || isLoadingUserData) return <>Loading...</>;
+  if (isLoadingMembership) return <>Loading...</>;
   return (
     <>
       <PaymentPopup
@@ -39,7 +40,12 @@ export const ClientMembership = () => {
         <BaseMembershipCard
           membership={membership}
           key={membership.id}
-          hasPurchased={hasPurchased(membership.id)}
+          hasPurchased={
+            !!activeMemberships?.some(
+              (activeMembership) =>
+                activeMembership.membershipId === membership.id
+            )
+          }
           onPurchase={handlePurchaseClick}
           features={[
             "Fixed membership fee annually",

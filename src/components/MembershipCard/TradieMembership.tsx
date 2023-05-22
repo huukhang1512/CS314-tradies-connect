@@ -2,14 +2,18 @@ import { PaymentPopup } from "../PaymentPopup";
 import { TRADIE_MEMBERSHIP } from "@/constant";
 import { useState } from "react";
 import { api } from "@/utils/api";
-import { type Membership } from "@prisma/client";
+import { type UserMembership, type Membership } from "@prisma/client";
 import { BaseMembershipCard } from "./BaseMembershipCard";
+import { useRouter } from "next/router";
 
-export const TradieMembership = () => {
+export const TradieMembership = ({
+  activeMemberships,
+}: {
+  activeMemberships: UserMembership[];
+}) => {
+  const router = useRouter();
   const [isPurchasingPopup, setIsPurchasingPopup] = useState(false);
   const [chosenMembership, setChosenMembership] = useState<Membership>();
-  const { data: userData, isLoading: isLoadingUserData } =
-    api.users.me.useQuery();
   const { data: membershipData, isLoading: isLoadingMembership } =
     api.memberships.getTradieMemberships.useQuery();
   const { mutateAsync } = api.memberships.subscribeToMembership.useMutation();
@@ -21,15 +25,10 @@ export const TradieMembership = () => {
 
   const subscribeToMembership = async () => {
     await mutateAsync({ membershipId: chosenMembership?.id || "" });
-    setIsPurchasingPopup(false);
+    await router.push("/app/tradie");
   };
 
-  const hasPurchased = (membershipId: string) =>
-    !!userData?.memberships
-      .map((mem: Membership) => mem.id)
-      .includes(membershipId);
-
-  if (isLoadingMembership || isLoadingUserData) return <>Loading...</>;
+  if (isLoadingMembership) return <>Loading...</>;
   return (
     <>
       <PaymentPopup
@@ -42,7 +41,12 @@ export const TradieMembership = () => {
         <BaseMembershipCard
           membership={membership}
           key={membership.id}
-          hasPurchased={hasPurchased(membership.id)}
+          hasPurchased={
+            !!activeMemberships?.some(
+              (activeMembership) =>
+                activeMembership.membershipId === membership.id
+            )
+          }
           onPurchase={handlePurchaseClick}
           features={["Fixed membership fee annually"]}
         />

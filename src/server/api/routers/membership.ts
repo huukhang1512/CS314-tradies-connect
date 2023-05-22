@@ -41,6 +41,24 @@ export const membershipRouter = createTRPCRouter({
     });
   }),
 
+  getUserActiveMembership: protectedProcedure.query(async (req) => {
+    const { session } = req.ctx;
+    return await prisma.userMembership.findMany({
+      where: {
+        user: {
+          id: session.user.id,
+        },
+        expiredAt: {
+          gte: new Date(),
+        },
+      },
+      include: {
+        user: true,
+        membership: true,
+      },
+    });
+  }),
+
   subscribeToMembership: protectedProcedure
     .input(SubscribeToMembershipInput)
     .mutation(async (req) => {
@@ -49,21 +67,24 @@ export const membershipRouter = createTRPCRouter({
       const membership = await prisma.membership.findUnique({
         where: { id: membershipId },
       });
+      const today = new Date();
+      today.setDate(today.getDate() + (membership?.duration || 0));
       await prisma.user.update({
         where: {
           id: session.user.id,
         },
         data: {
           memberships: {
-            connect: {
-              id: membershipId,
-            },
+            create: { membershipId: membershipId, expiredAt: today },
           },
           payments: {
             create: {
               amount: membership?.price || 0,
               paymentStatus: PaymentStatus.COMPLETED,
-              paymentType: PaymentType.CLIENT_MEMBERSHIP,
+              paymentType:
+                membership?.type === MembershipType.CLIENT
+                  ? PaymentType.CLIENT_MEMBERSHIP
+                  : PaymentType.PROVIDER_MEMBERSHIP,
             },
           },
         },

@@ -1,4 +1,4 @@
-import { Button, HStack, Heading, Text, VStack } from "@chakra-ui/react";
+import { Button, HStack, Heading, Stack, Text, VStack } from "@chakra-ui/react";
 import { type Membership } from "@prisma/client";
 import membershipSVG from "@/assets/membership.svg";
 import crownIconSVG from "@/assets/crownIcon.svg";
@@ -17,23 +17,26 @@ export const BaseMembershipCard = ({
   features?: string[];
 }) => {
   return (
-    <HStack
+    <Stack
+      direction={{
+        lg: "row",
+        base: "column-reverse",
+      }}
+      spacing={5}
       key={membership.id}
       bg={"white"}
       p={6}
       rounded={"md"}
       justify={"space-between"}
-      maxW={"1073px"}
-      h={"590px"}
     >
       <VStack
         align={"center"}
         justify={"space-between"}
+        minH={{ lg: "450px" }}
         h={"full"}
         w={"full"}
-        spacing={10}
       >
-        <VStack spacing={10} p={20}>
+        <VStack spacing={10} padding={{ lg: 10, base: 5 }}>
           <VStack>
             <Heading
               as={"h3"}
@@ -48,7 +51,7 @@ export const BaseMembershipCard = ({
           <Heading size={"xl"} textAlign={"center"}>
             {membership.price} AUD
           </Heading>
-          <VStack minW={"60%"}>
+          <VStack w={"full"}>
             {features?.map((feature, i) => (
               <HStack color={"blue.primary"} w={"full"} key={i}>
                 <IoCheckmarkCircleOutline size={"18px"} />
@@ -66,7 +69,9 @@ export const BaseMembershipCard = ({
           {hasPurchased ? "Purchased" : "Purchase"}
         </Button>
       </VStack>
-      <Image src={membershipSVG} alt={"Membership picture"} />
-    </HStack>
+      <VStack w={"full"} h={"full"} minH={{ lg: "450px" }} justify={"center"}>
+        <Image src={membershipSVG} alt={"Membership picture"} />
+      </VStack>
+    </Stack>
   );
 };

@@ -40,32 +40,31 @@ const UpdateUserInput = z.object({
 export type PaginatedQueryOutputType = z.infer<typeof PaginatedGetUsersOutput>;
 
 export const userRouter = createTRPCRouter({
-  getUsers: adminProcedure
-    .input(PaginatedInput)
-    .mutation(async (req) => {
-      const users = await prisma.user.findMany({
-        skip: (req.input.page - 1) * req.input.perPage,
-        take: req.input.perPage,
-        where: {
-          role: {
-            not: Role.ADMIN,
-          },
+  getUsers: adminProcedure.input(PaginatedInput).mutation(async (req) => {
+    const users = await prisma.user.findMany({
+      skip: (req.input.page - 1) * req.input.perPage,
+      take: req.input.perPage,
+      where: {
+        role: {
+          not: Role.ADMIN,
         },
-      });
-      const count = await prisma.user.count({
-        where: {
-          role: {
-            not: Role.ADMIN,
-          },
+      },
+    });
+    const count = await prisma.user.count({
+      where: {
+        role: {
+          not: Role.ADMIN,
         },
-      });
-      return {
-        total: count,
-        page: req.input.page,
-        perPage: req.input.perPage,
-        data: users,
-      };
-    }),
+      },
+    });
+    return {
+      total: count,
+      page: req.input.page,
+      perPage: req.input.perPage,
+      data: users,
+    };
+  }),
+
   me: protectedProcedure.query(async (req) => {
     const { session } = req.ctx;
     const user = await prisma.user.findUnique({
@@ -73,9 +72,10 @@ export const userRouter = createTRPCRouter({
         id: session.user.id,
       },
       include: {
-        memberships: true,
+        memberships: true
       },
     });
+
     if (!user) {
       throw new Error("User not found");
     }
