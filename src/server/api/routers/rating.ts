@@ -8,6 +8,8 @@ const CreateRatingInput = z.object({
   comment: z.string(),
 })  
 
+export type CreateRatingInputType = z.infer<typeof CreateRatingInput>
+
 const CreateRatingOutput = z.object({
   status: z.string()
 })
@@ -54,7 +56,7 @@ export const ratingRouter = createTRPCRouter({
         };
       }
 
-      const jobId = proposal.jobs[0]!.id;
+      const jobId = proposal.jobs[0]?.id;
       const providerId = proposal.providerId;
 
       await prisma.review.create({

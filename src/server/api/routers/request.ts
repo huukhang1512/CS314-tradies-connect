@@ -133,9 +133,7 @@ export const requestRouter = createTRPCRouter({
       return {};
     }),
   getRequestsByUser: protectedProcedure
-    .meta({ openapi: { method: "GET", path: "/requests/:userId" } })
     .input(PaginatedGetRequestInput)
-    .output(z.object({}))
     .mutation(async (_req) => {
       const { input, ctx } = _req;
       const { page, perPage } = input;

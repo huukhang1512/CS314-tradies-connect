@@ -1,6 +1,6 @@
 import SidebarWithHeader from "@/components/SidebarWithHeader";
 import { Portal } from "@/components/SidebarWithHeader";
-import CustomTable, { RowAction } from "@/components/Table";
+import CustomTable, { type RowAction } from "@/components/Table";
 import Rating from "@/components/Rating";
 import { api } from "@/utils/api";
 import {
@@ -30,15 +30,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BsCheckCircle, BsInfoCircle, BsStar } from "react-icons/bs";
 import { AiOutlineMessage } from "react-icons/ai";
 import { RequestStatus } from "@prisma/client";
-import { CellProps, type Column } from "react-table";
+import { type CellProps, type Column } from "react-table";
 import { CloseIcon } from "@chakra-ui/icons";
-import { FormikValues, useFormik } from "formik";
-import {
-  CreateRequestInputType,
-  UpdateRequestInputType,
-} from "@/server/api/routers/request";
+import { type FormikValues, useFormik } from "formik";
 import markAsCompleted from "@/assets/markAsCompleted.png";
-import { Request } from "@prisma/client";
+import { type Request } from "@prisma/client";
+import { type AcceptProposalInputType } from "@/server/api/routers/proposal";
+import { type CreateRatingInputType } from "@/server/api/routers/rating";
 const renderDate: React.FC<CellProps<Request, Date>> = (cell) => {
   return <>{cell.value.toLocaleString("en-AU")}</>;
 };
@@ -92,7 +90,7 @@ type RespondersPopUpProps = {
   isOpen: boolean;
   onClose: () => void;
   request?: Request;
-  onSubmit: (responder) => Promise<void>;
+  onSubmit: (responder: AcceptProposalInputType) => Promise<void>;
 };
 
 const RespondersPopUp = (props: RespondersPopUpProps) => {
@@ -171,7 +169,7 @@ const MarkAsCompletePopUp = (props: MarkAsCompletePopUpProps) => {
               variant={"primary"}
               w={"full"}
               type={"submit"}
-              onClick={() => onSubmit()}
+              onClick={() => void onSubmit()}
             >
               Confirm
             </Button>
@@ -185,9 +183,10 @@ const MarkAsCompletePopUp = (props: MarkAsCompletePopUpProps) => {
 type RatingPopUpProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (values) => Promise<any>;
+  onSubmit: (values: CreateRatingInputType) => Promise<any>;
   request?: Request;
 };
+
 
 const RatingPopup = (props: RatingPopUpProps) => {
   const { isOpen, onClose, onSubmit, request } = props;
@@ -197,10 +196,10 @@ const RatingPopup = (props: RatingPopUpProps) => {
     initialValues: {
       rating: 5,
       comment: "",
+      requestId: request?.id || "",
     },
     onSubmit: async (values) => {
-      const valuesWithRequest = { ...values, requestId: request?.id}
-      await onSubmit(valuesWithRequest);
+      await onSubmit(values);
     },
   });
 
@@ -244,7 +243,7 @@ const RatingPopup = (props: RatingPopUpProps) => {
                   <Rating
                     size={48}
                     name={"rating"}
-                    onChange={(value) => formik.setFieldValue("rating", value)}
+                    onChange={(value) => void formik.setFieldValue("rating", value)}
                     value={formik.values.rating}
                     maxRating={5}
                   />
@@ -285,28 +284,28 @@ interface InputType extends FormikValues {
   serviceName: string;
   description: string;
   unit: number;
-  id?: string;
+  id: string;
 }
 
-type RequestPopupProps<T> = {
+type RequestPopupProps = {
   isOpen: boolean;
   mode?: "update" | "create";
   request?: Request;
   onClose: () => void;
-  onSubmit: (values: T) => Promise<void>;
+  onSubmit: (values: InputType) => Promise<void>;
   onCancel?: (id) => void;
 };
 
-const RequestPopup = <T extends InputType>({
+const RequestPopup = ({
   isOpen,
   mode = "create",
   request,
   onClose,
   onSubmit,
   onCancel,
-}: RequestPopupProps<T>) => {
+}: RequestPopupProps) => {
   let { data: services } = api.services.getServices.useQuery();
-  useEffect(() => {
+  useEffect( () => {
     if (services === undefined) {
       services = [];
     } else if (services !== undefined && services.length > 0) {
@@ -314,12 +313,13 @@ const RequestPopup = <T extends InputType>({
       if (services !== undefined && services.length > 0) {
         defaultService = services[0]?.name || "";
       }
-      formik.setFieldValue("serviceName", defaultService);
+      const setDefaultServiceName = () => void formik.setFieldValue("serviceName", defaultService);
+      void setDefaultServiceName();
     }
   }, [services]);
 
-  const initialValues = useMemo(() => {
-    let initialValues;
+  const initialValues = useMemo<InputType>(() => {
+    let initialValues: InputType;
     if (mode === "update" && request !== undefined) {
       initialValues = {
         serviceName: request.serviceName,
@@ -332,12 +332,13 @@ const RequestPopup = <T extends InputType>({
         serviceName: "",
         description: "",
         unit: 0,
+        id: "",
       };
     }
     return initialValues;
   }, [mode, request]);
 
-  const formik = useFormik({
+  const formik = useFormik<InputType>({
     enableReinitialize: true,
     initialValues,
     onSubmit: async (values) => {
@@ -548,10 +549,9 @@ const Client = () => {
       shouldRender: (row) => row.status === RequestStatus.COMPLETED,
     },
   ];
-
   return (
     <>
-      <RequestPopup<CreateRequestInputType>
+      <RequestPopup
         key={"create"}
         mode="create"
         isOpen={openCreate}
@@ -562,7 +562,7 @@ const Client = () => {
           setForceRefetch(true);
         }}
       />
-      <RequestPopup<UpdateRequestInputType>
+      <RequestPopup
         key={"update"}
         mode="update"
         isOpen={openUpdate}
@@ -573,7 +573,8 @@ const Client = () => {
           setOpenUpdate(false);
           setForceRefetch(true);
         }}
-        onCancel={async (id) => {
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
+        onCancel={async (id: string) => {
           await cancelRequest({ id });
           setOpenUpdate(false);
           setForceRefetch(true);
@@ -583,7 +584,7 @@ const Client = () => {
         isOpen={openComplete}
         onClose={() => setOpenComplete(false)}
         onSubmit={async () => {
-          await completeJob({id: selectedRequest!.id});
+          await completeJob({id: selectedRequest?.id || ""});
           setOpenComplete(false);
           setForceRefetch(true);
         }}
@@ -591,7 +592,7 @@ const Client = () => {
       <RatingPopup
         isOpen={openRating}
         onClose={() => setOpenRating(false)}
-        onSubmit={async (values) => {
+        onSubmit={async (values: CreateRatingInputType) => {
           await rateProvider(values);
           setOpenRating(false);
           setForceRefetch(true);
@@ -602,8 +603,8 @@ const Client = () => {
         isOpen={openResponders}
         onClose={() => setOpenResponders(false)}
         request={selectedRequest}
-        onSubmit={async (responder) => {
-          await acceptProposal({ requestId: selectedRequest!.id, responderId: responder.id });
+        onSubmit={async (responder: AcceptProposalInputType) => {
+          await acceptProposal({ requestId: selectedRequest?.id || "", responderId: responder.responderId });
           setOpenResponders(false);
           setForceRefetch(true);
         }}

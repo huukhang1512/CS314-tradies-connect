@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { Box, Stack, Text } from "@chakra-ui/react";
+import { Box, Stack } from "@chakra-ui/react";
 import { GiRoundStar } from "react-icons/gi";
 
 export type RatingProps = {
-  size?: number;
+  size: number;
   onChange: (rating: number) => void;
   value: number;
   maxRating: number;
@@ -13,7 +13,7 @@ export type RatingProps = {
 const Rating = ({ size, onChange, value, maxRating }: RatingProps) => {
   const [rating, setRating] = useState(value);
 
-  const onClick = (idx) => {
+  const onClick = (idx: number) => {
     if (!isNaN(idx)) {
       setRating(idx);
       onChange(idx)
@@ -23,14 +23,13 @@ const Rating = ({ size, onChange, value, maxRating }: RatingProps) => {
   const RatingIcon = ({ fill }) => {
     return (
       <GiRoundStar
-        size={"3em"}
+        size={`${size}px`}
         color={fill ? "#FFDB5E" : "#D8DAE2"}
-        onClick={onClick}
       />
     );
   };
 
-  const RatingButton = ({ idx, fill }) => {
+  const RatingButton = ({ idx, fill } : {idx: number, fill: boolean}) => {
     return (
       <Box
         as="button"
@@ -48,7 +47,7 @@ const Rating = ({ size, onChange, value, maxRating }: RatingProps) => {
 
   return (
     <Stack isInline mt={3} justify="center">
-      {[...Array(maxRating)].map((_, i) => (
+      {[...Array<number>(maxRating)].map((_, i) => (
         <RatingButton key={i + 1} idx={i + 1} fill={i < rating} />
       ))}
     </Stack>

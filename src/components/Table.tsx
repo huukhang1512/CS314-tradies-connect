@@ -87,7 +87,7 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
   const instance = useTable<T>(
     {
       columns,
-      data: data.data,
+      data: data?.data || [],
       state: {
         pagination,
       },

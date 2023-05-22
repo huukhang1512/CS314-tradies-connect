@@ -8,6 +8,8 @@ const AcceptProposalInput = z.object({
   responderId: z.string(),
 });
 
+export type AcceptProposalInputType = z.infer<typeof AcceptProposalInput>;
+
 const AcceptProposalOutput = z.object({
   status: z.string(),
 });
