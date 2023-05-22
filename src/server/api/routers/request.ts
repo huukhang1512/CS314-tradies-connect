@@ -15,7 +15,10 @@ export const RequestSchema = z.object({
   createdAt: z.date(),
   unit: z.number(),
   price: z.number(),
+  clientId: z.string(),
 });
+
+export type RequestSchemaType = z.infer<typeof RequestSchema>;
 
 const CreateRequestInput = z.object({
   serviceName: z.string(),
@@ -112,6 +115,7 @@ export const requestRouter = createTRPCRouter({
           createdAt: true,
           unit: true,
           price: true,
+          clientId: true,
         },
       });
 
@@ -131,7 +135,7 @@ export const requestRouter = createTRPCRouter({
   getRequestsByUser: protectedProcedure
     .meta({ openapi: { method: "GET", path: "/requests/:userId" } })
     .input(PaginatedGetRequestInput)
-    .output(PaginatedGetRequestOutput)
+    .output(z.object({}))
     .mutation(async (_req) => {
       const { input, ctx } = _req;
       const { page, perPage } = input;
@@ -148,6 +152,7 @@ export const requestRouter = createTRPCRouter({
           createdAt: true,
           unit: true,
           price: true,
+          clientId: true,
         },
         skip: (page - 1) * perPage,
         take: perPage,
@@ -208,6 +213,7 @@ export const requestRouter = createTRPCRouter({
             createdAt: true,
             unit: true,
             price: true,
+            clientId: true,
           },
         });
 

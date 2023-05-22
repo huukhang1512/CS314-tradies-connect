@@ -26,12 +26,11 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react";
-import { Request } from "@prisma/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BsCheckCircle, BsInfoCircle, BsStar } from "react-icons/bs";
 import { AiOutlineMessage } from "react-icons/ai";
 import { RequestStatus } from "@prisma/client";
-import { CellProps } from "react-table";
+import { CellProps, type Column } from "react-table";
 import { CloseIcon } from "@chakra-ui/icons";
 import { FormikValues, useFormik } from "formik";
 import {
@@ -39,6 +38,7 @@ import {
   UpdateRequestInputType,
 } from "@/server/api/routers/request";
 import markAsCompleted from "@/assets/markAsCompleted.png";
+import { Request } from "@prisma/client";
 const renderDate: React.FC<CellProps<Request, Date>> = (cell) => {
   return <>{cell.value.toLocaleString("en-AU")}</>;
 };
@@ -478,7 +478,7 @@ const Client = () => {
     },
     [getRequests]
   );
-  const columns = useMemo(
+  const columns = useMemo<Column<Request>[]>(
     () => [
       {
         Header: "ID",
