@@ -1,9 +1,9 @@
 import { test, expect } from "@jest/globals";
-import { type AppRouter, appRouter } from "../../../root";
+import { type AppRouter, appRouter } from "../../root";
 import { type PrismaClient, PaymentType, PaymentStatus } from "@prisma/client";
 import { mockDeep } from "jest-mock-extended";
 import { type inferProcedureOutput } from "@trpc/server";
-import { createInnerTRPCContext } from "../../../trpc";
+import { createInnerTRPCContext } from "../../trpc";
 import { fakeAdminSession, fakeUser, fakeUserSession } from "@/fakes/fakeUser";
 
 const prismaMock = mockDeep<PrismaClient>();

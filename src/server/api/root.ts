@@ -1,12 +1,12 @@
 import { createTRPCRouter } from "@/server/api/trpc";
-import { userRouter } from "./routers/user/user";
-import { serviceRouter } from "./routers/service/service";
-import { requestRouter } from "./routers/request/request";
-import { proposalRouter } from "./routers/proposal/proposal";
-import { jobRouter } from "./routers/job/job";
+import { userRouter } from "./routers/user";
+import { serviceRouter } from "./routers/service";
+import { requestRouter } from "./routers/request";
+import { proposalRouter } from "./routers/proposal";
+import { jobRouter } from "./routers/job";
 import { ratingRouter } from "./routers/rating";
-import { membershipRouter } from "./routers/membership/membership";
-import { paymentRouter } from "./routers/payment/payment";
+import { membershipRouter } from "./routers/membership";
+import { paymentRouter } from "./routers/payment";
 
 /**
  * This is the primary router for your server.
