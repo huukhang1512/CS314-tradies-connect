@@ -29,7 +29,7 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { BsCheckCircle, BsInfoCircle, BsStar } from "react-icons/bs";
 import { AiOutlineMessage } from "react-icons/ai";
-import { RequestStatus } from "@prisma/client";
+import { MembershipType, RequestStatus } from "@prisma/client";
 import { type CellProps, type Column } from "react-table";
 import { CloseIcon } from "@chakra-ui/icons";
 import { type FormikValues, useFormik } from "formik";
@@ -298,6 +298,8 @@ const RequestPopup = ({
   onCancel,
 }: RequestPopupProps) => {
   const { data: services } = api.services.getServices.useQuery();
+  const { data: activeMembership } =
+    api.memberships.getUserActiveMembership.useQuery();
 
   const initialValues = useMemo<InputType>(() => {
     if (mode === "update" && request !== undefined) {
@@ -330,6 +332,17 @@ const RequestPopup = ({
       services?.find((service) => service.name === serviceName),
     [services]
   );
+
+  const hasClientMembership = () => {
+    const currentClientMembership = activeMembership?.filter(
+      (mem) => mem.membership.type === MembershipType.CLIENT
+    );
+    if (request)
+      return currentClientMembership?.some(
+        (mem) => mem.createdAt < request.createdAt // request made before membership or not
+      );
+    return currentClientMembership?.length !== 0;
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
@@ -389,7 +402,7 @@ const RequestPopup = ({
                   </InputLeftAddon>
                   <Input
                     id={"unit"}
-                    type={"tel"}
+                    type={"number"}
                     name={"unit"}
                     onChange={formik.handleChange}
                     variant={"filled"}
@@ -417,9 +430,12 @@ const RequestPopup = ({
               <HStack w={"full"} justify={"space-between"}>
                 <Text>Total price:</Text>
                 <Text fontWeight={"bold"}>
-                  $
-                  {(getServiceFromName(formik.values.serviceName)?.rate || 1) *
-                    formik.values.unit}
+                  {hasClientMembership()
+                    ? "Free"
+                    : `$${
+                        (getServiceFromName(formik.values.serviceName)?.rate ||
+                          1) * formik.values.unit
+                      }`}
                 </Text>
               </HStack>
               {(mode === "create" ||
