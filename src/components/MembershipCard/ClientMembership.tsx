@@ -15,7 +15,8 @@ export const ClientMembership = ({
   const [chosenMembership, setChosenMembership] = useState<Membership>();
   const { data: membershipData, isLoading: isLoadingMembership } =
     api.memberships.getClientMemberships.useQuery();
-  const { mutateAsync } = api.memberships.subscribeToMembership.useMutation();
+  const { isLoading: isSubscribing, mutateAsync } =
+    api.memberships.subscribeToMembership.useMutation();
 
   const handlePurchaseClick = (membership: Membership) => {
     setIsPurchasingPopup(true);
@@ -31,6 +32,7 @@ export const ClientMembership = ({
   return (
     <>
       <PaymentPopup
+        isLoading={isSubscribing}
         isOpen={isPurchasingPopup}
         onClose={() => setIsPurchasingPopup(false)}
         onSubmit={subscribeToMembership}
