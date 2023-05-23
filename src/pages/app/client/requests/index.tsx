@@ -6,6 +6,7 @@ import { api } from "@/utils/api";
 import {
   Button,
   FormControl,
+  FormHelperText,
   FormLabel,
   Heading,
   HStack,
@@ -412,6 +413,9 @@ const RequestPopup = ({
                     value={formik.values.unit}
                   />
                 </InputGroup>
+                <FormHelperText>
+                  {getServiceFromName(formik.values.serviceName)?.description}
+                </FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel>Description</FormLabel>
