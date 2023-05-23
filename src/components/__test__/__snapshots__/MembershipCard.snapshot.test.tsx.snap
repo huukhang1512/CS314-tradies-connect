@@ -1,0 +1,70 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Base Membership Card Matches DOM Snapshot 1`] = `
+<div>
+  <div
+    class="chakra-stack css-k0i0lp"
+  >
+    <div
+      class="chakra-stack css-gdhzad"
+    >
+      <div
+        class="chakra-stack css-1y7k6cf"
+      >
+        <div
+          class="chakra-stack css-owjkmg"
+        >
+          <h3
+            class="chakra-heading css-zxmxh1"
+          >
+            CLIENT
+             MEMBERSHIP
+          </h3>
+          <img
+            alt="Crown Icon"
+            data-nimg="1"
+            decoding="async"
+            height="40"
+            loading="lazy"
+            src="/_next/image?url=%2Fimg.jpg&w=96&q=75"
+            srcset="/_next/image?url=%2Fimg.jpg&w=48&q=75 1x, /_next/image?url=%2Fimg.jpg&w=96&q=75 2x"
+            style="color: transparent;"
+            width="40"
+          />
+        </div>
+        <h2
+          class="chakra-heading css-xi606m"
+        >
+          120
+           AUD
+        </h2>
+        <div
+          class="chakra-stack css-dvmr28"
+        />
+      </div>
+      <button
+        class="chakra-button css-l01cow"
+        disabled=""
+        type="button"
+      >
+        Purchased
+      </button>
+    </div>
+    <div
+      class="chakra-stack css-7gzwdb"
+    >
+      <img
+        alt="Membership picture"
+        data-nimg="1"
+        decoding="async"
+        height="40"
+        loading="lazy"
+        src="/_next/image?url=%2Fimg.jpg&w=96&q=75"
+        srcset="/_next/image?url=%2Fimg.jpg&w=48&q=75 1x, /_next/image?url=%2Fimg.jpg&w=96&q=75 2x"
+        style="color: transparent;"
+        width="40"
+      />
+    </div>
+  </div>
+</div>
+`;

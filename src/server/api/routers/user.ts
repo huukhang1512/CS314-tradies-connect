@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { prisma } from "@/server/db";
 import {
   createTRPCRouter,
   adminProcedure,
@@ -41,6 +40,7 @@ export type PaginatedQueryOutputType = z.infer<typeof PaginatedGetUsersOutput>;
 
 export const userRouter = createTRPCRouter({
   getUsers: adminProcedure.input(PaginatedInput).mutation(async (req) => {
+    const { prisma } = req.ctx;
     const users = await prisma.user.findMany({
       skip: (req.input.page - 1) * req.input.perPage,
       take: req.input.perPage,
@@ -66,13 +66,13 @@ export const userRouter = createTRPCRouter({
   }),
 
   me: protectedProcedure.query(async (req) => {
-    const { session } = req.ctx;
+    const { session, prisma } = req.ctx;
     const user = await prisma.user.findUnique({
       where: {
         id: session.user.id,
       },
       include: {
-        memberships: true
+        memberships: true,
       },
     });
 
@@ -85,8 +85,7 @@ export const userRouter = createTRPCRouter({
   updateUser: protectedProcedure
     .input(UpdateUserInput)
     .mutation(async (req) => {
-      const { ctx } = req;
-      const { session } = ctx;
+      const { session, prisma } = req.ctx;
       const {
         id,
         email,
@@ -143,38 +142,5 @@ export const userRouter = createTRPCRouter({
           })),
         },
       };
-    }),
-    
-  changeUserInfo: protectedProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        providedServices: z.string().array().optional(),
-        location: z.string(),
-      })
-    )
-    .mutation(async (req) => {
-      const { input, ctx } = req;
-      const { id } = ctx.session.user;
-      const validServices = await prisma.service.findMany({
-        where: {
-          name: {
-            in: input.providedServices,
-          },
-        },
-        select: {
-          name: true,
-        },
-      });
-
-      return await prisma.user.update({
-        where: { id },
-        data: {
-          name: input.name,
-          providedServices: {
-            set: validServices,
-          },
-        },
-      });
     }),
 });
