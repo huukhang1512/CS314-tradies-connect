@@ -82,7 +82,7 @@ test("updateUser test", async () => {
     data: {
       ...user,
       ...input,
-      providedServices: SERVICES,
+      providedServices: SERVICES
     },
   };
   prismaMock.user.update.mockResolvedValue({ ...user, ...input });
