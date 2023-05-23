@@ -18,7 +18,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Textarea,
   VStack,
 } from "@chakra-ui/react";
 import { type Service } from "@prisma/client";
@@ -48,6 +47,7 @@ const ServicePopup = ({
       name: service?.name || "",
       rate: service?.rate || 0,
       description: service?.description || "",
+      unit: service?.unit || "",
     },
     onSubmit: async (values) => {
       await onSubmit(values);
@@ -107,8 +107,21 @@ const ServicePopup = ({
                 </InputGroup>
               </FormControl>
               <FormControl>
+                <FormLabel>Unit</FormLabel>
+                <Input
+                  id={"unit"}
+                  name={"unit"}
+                  onChange={formik.handleChange}
+                  variant={"filled"}
+                  bg={"background.gray"}
+                  borderColor={"text.disable"}
+                  borderWidth={1}
+                  value={formik.values.unit}
+                />
+              </FormControl>
+              <FormControl>
                 <FormLabel>Description</FormLabel>
-                <Textarea
+                <Input
                   id={"description"}
                   name={"description"}
                   onChange={formik.handleChange}
@@ -117,7 +130,6 @@ const ServicePopup = ({
                   borderColor={"text.disable"}
                   borderWidth={1}
                   value={formik.values.description}
-                  h={300}
                 />
               </FormControl>
               <Button
@@ -164,7 +176,11 @@ const ServiceMangement = () => {
         accessor: "rate",
       },
       {
-        Header: "DESCRIPTION",
+        Header: "UNIT",
+        accessor: "unit",
+      },
+      {
+        Header: "UNIT DESCRIPTION",
         accessor: "description",
       },
     ],
