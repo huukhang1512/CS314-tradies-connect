@@ -311,7 +311,7 @@ const RequestPopup = ({
       return {
         serviceName: services?.at(0)?.name || "",
         description: "",
-        unit: 0,
+        unit: 1,
         id: "",
       };
     }
@@ -324,6 +324,12 @@ const RequestPopup = ({
       await onSubmit(values);
     },
   });
+
+  const getServiceFromName = useCallback(
+    (serviceName: string) =>
+      services?.find((service) => service.name === serviceName),
+    [services]
+  );
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
@@ -376,13 +382,15 @@ const RequestPopup = ({
                 </Select>
               </FormControl>
               <FormControl>
-                <FormLabel>Unit</FormLabel>
+                <FormLabel>Quantity</FormLabel>
                 <InputGroup>
-                  <InputLeftAddon>$</InputLeftAddon>
+                  <InputLeftAddon>
+                    {getServiceFromName(formik.values.serviceName)?.unit}
+                  </InputLeftAddon>
                   <Input
                     id={"unit"}
+                    type={"tel"}
                     name={"unit"}
-                    type={"number"}
                     onChange={formik.handleChange}
                     variant={"filled"}
                     bg={"background.gray"}
@@ -406,6 +414,14 @@ const RequestPopup = ({
                   h={300}
                 />
               </FormControl>
+              <HStack w={"full"} justify={"space-between"}>
+                <Text>Total price:</Text>
+                <Text fontWeight={"bold"}>
+                  $
+                  {(getServiceFromName(formik.values.serviceName)?.rate || 1) *
+                    formik.values.unit}
+                </Text>
+              </HStack>
               {(mode === "create" ||
                 request?.status == RequestStatus.BROADCASTED ||
                 request?.status == RequestStatus.IN_PROGRESS) && (

@@ -18,7 +18,6 @@ import {
   ModalContent,
   ModalHeader,
   ModalOverlay,
-  Textarea,
   VStack,
 } from "@chakra-ui/react";
 import { type Service } from "@prisma/client";
