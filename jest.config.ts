@@ -1,3 +1,4 @@
+
 export default {
   clearMocks: true,
   coverageProvider: "v8",
@@ -6,7 +7,9 @@ export default {
   transform: {
     "^.+\\.mjs$": "ts-jest",
   },
+  moduleFileExtensions: ["ts", "tsx", "js"],
   moduleNameMapper: {
     "@/(.*)": ["<rootDir>/src/$1"],
   },
 };
+
