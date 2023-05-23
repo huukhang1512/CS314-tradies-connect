@@ -6,23 +6,19 @@ import {
 } from "@/server/api/trpc";
 import { PaginatedInput } from "@/types/paginatedInput";
 
-export const ServiceSchema = z.object({
-  name: z.string(),
-  rate: z.number(),
-  description: z.string(),
-});
-
 const GetServicesByNameRequest = z.string();
 const CreateNewServiceRequest = z.object({
   name: z.string(),
   rate: z.number(),
   description: z.string(),
+  unit: z.string(),
 });
 
 const UpdateServiceRequest = z.object({
   name: z.string(),
   rate: z.number(),
   description: z.string(),
+  unit: z.string(),
 });
 
 export const serviceRouter = createTRPCRouter({
@@ -45,7 +41,7 @@ export const serviceRouter = createTRPCRouter({
     .mutation(async (req) => {
       const { prisma } = req.ctx;
       const { input } = req;
-      const { name, rate, description } = input;
+      const { name, rate, description, unit } = input;
       return await prisma.service.update({
         where: {
           name,
@@ -54,6 +50,7 @@ export const serviceRouter = createTRPCRouter({
           name,
           rate,
           description,
+          unit,
         },
       });
     }),

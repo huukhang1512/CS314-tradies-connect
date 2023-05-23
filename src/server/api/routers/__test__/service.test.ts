@@ -96,6 +96,7 @@ test("createNewService test", async () => {
     description: "Test service",
     name: "Test Service",
     rate: 123,
+    unit: "unit",
   };
   prismaMock.service.create.mockResolvedValue(mockService);
 
@@ -110,6 +111,7 @@ test("createNewService test", async () => {
     description: "Test service",
     name: "Test Service",
     rate: 123,
+    unit: "unit",
   });
 
   expect(result).toMatchObject(mockService);
@@ -122,6 +124,7 @@ test("updateService test", async () => {
     description: "Test service",
     name: "Test Service",
     rate: 123,
+    unit: "unit",
   };
   prismaMock.service.update.mockResolvedValue(mockService);
 
@@ -136,6 +139,7 @@ test("updateService test", async () => {
     description: "Test service",
     name: "Test Service",
     rate: 123,
+    unit: "unit",
   });
 
   expect(result).toMatchObject(mockService);
