@@ -79,13 +79,13 @@ const TradieLinkItems: LinkItemProps[] = [
 ];
 
 const ClientLinkItems: LinkItemProps[] = [
-  { name: "My request list", icon: AiOutlineFileDone, link: "" },
+  { name: "My request list", icon: AiOutlineFileDone, link: "/app/client/requests" },
   {
     name: "Subcriptions",
     icon: BiBadgeCheck,
     link: "/app/client/subscription",
   },
-  { name: "My payment", icon: IoWalletOutline, link: "/app/payment" },
+  { name: "My payment", icon: IoWalletOutline, link: "" },
 ];
 
 const ProfileLinkItems: LinkItemProps[] = [
