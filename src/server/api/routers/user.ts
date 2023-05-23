@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { prisma } from "@/server/db";
 import {
   createTRPCRouter,
   adminProcedure,
@@ -41,6 +40,7 @@ export type PaginatedQueryOutputType = z.infer<typeof PaginatedGetUsersOutput>;
 
 export const userRouter = createTRPCRouter({
   getUsers: adminProcedure.input(PaginatedInput).mutation(async (req) => {
+    const { prisma } = req.ctx;
     const users = await prisma.user.findMany({
       skip: (req.input.page - 1) * req.input.perPage,
       take: req.input.perPage,
@@ -66,13 +66,13 @@ export const userRouter = createTRPCRouter({
   }),
 
   me: protectedProcedure.query(async (req) => {
-    const { session } = req.ctx;
+    const { session, prisma } = req.ctx;
     const user = await prisma.user.findUnique({
       where: {
         id: session.user.id,
       },
       include: {
-        memberships: true
+        memberships: true,
       },
     });
 
@@ -85,8 +85,7 @@ export const userRouter = createTRPCRouter({
   updateUser: protectedProcedure
     .input(UpdateUserInput)
     .mutation(async (req) => {
-      const { ctx } = req;
-      const { session } = ctx;
+      const { session, prisma } = req.ctx;
       const {
         id,
         email,
