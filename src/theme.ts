@@ -1,4 +1,7 @@
 import { type ChakraTheme, extendTheme } from "@chakra-ui/react";
+const disabledStyles = {
+  backgroundColor: "blue.05",
+};
 
 const components: ChakraTheme["components"] = {
   Button: {
@@ -10,6 +13,14 @@ const components: ChakraTheme["components"] = {
       primary: {
         bg: "button.primary",
         color: "white",
+        _disabled: {
+          ...disabledStyles,
+        },
+        _hover: {
+          _disabled: {
+            ...disabledStyles
+          }
+        }
       },
       secondary: {
         bg: "button.secondary",
