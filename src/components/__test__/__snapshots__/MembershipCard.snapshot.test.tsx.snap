@@ -6,7 +6,7 @@ exports[`Base Membership Card Matches DOM Snapshot 1`] = `
     class="chakra-stack css-k0i0lp"
   >
     <div
-      class="chakra-stack css-gdhzad"
+      class="chakra-stack css-1f2qmfs"
     >
       <div
         class="chakra-stack css-1y7k6cf"
@@ -44,10 +44,9 @@ exports[`Base Membership Card Matches DOM Snapshot 1`] = `
       </div>
       <button
         class="chakra-button css-l01cow"
-        disabled=""
         type="button"
       >
-        Purchased
+        Cancel Membership
       </button>
     </div>
     <div

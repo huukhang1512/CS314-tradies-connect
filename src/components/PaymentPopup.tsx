@@ -23,13 +23,11 @@ export const PaymentPopup = ({
   isOpen,
   onClose,
   onSubmit,
-  isLoading
 }: {
   total: number;
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (values: unknown) => Promise<void>;
-  isLoading: boolean;
 }) => {
   const formik = useFormik({
     enableReinitialize: true,
@@ -137,7 +135,12 @@ export const PaymentPopup = ({
                 w={"full"}
                 textTransform={"capitalize"}
                 type={"submit"}
-                isLoading={isLoading}
+                isDisabled={
+                  formik.values.cardNumber.length === 0 ||
+                  formik.values.cvv.length === 0 ||
+                  formik.values.expiryDate.length === 0
+                }
+                isLoading={formik.isSubmitting}
               >
                 Submit
               </Button>

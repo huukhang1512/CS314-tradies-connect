@@ -47,6 +47,7 @@ test("me test", async () => {
         membershipId: "membership-id",
         createdAt: new Date(),
         expiredAt: new Date(),
+        isAutoRenew: true,
       },
     ],
   };
@@ -82,7 +83,7 @@ test("updateUser test", async () => {
     data: {
       ...user,
       ...input,
-      providedServices: SERVICES
+      providedServices: SERVICES,
     },
   };
   prismaMock.user.update.mockResolvedValue({ ...user, ...input });

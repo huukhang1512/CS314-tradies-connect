@@ -18,9 +18,9 @@ const components: ChakraTheme["components"] = {
         },
         _hover: {
           _disabled: {
-            ...disabledStyles
-          }
-        }
+            ...disabledStyles,
+          },
+        },
       },
       secondary: {
         bg: "button.secondary",
@@ -28,6 +28,10 @@ const components: ChakraTheme["components"] = {
       },
       link: {
         color: "blue.primary",
+      },
+      danger: {
+        color: "white",
+        bg: "red.600",
       },
     },
   },
