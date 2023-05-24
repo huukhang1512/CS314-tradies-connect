@@ -1,9 +1,10 @@
+import { PaymentStatusTag } from "@/components/PaymentStatusTag";
 import SidebarWithHeader from "@/components/SidebarWithHeader";
 import { Portal } from "@/components/SidebarWithHeader";
 import CustomTable from "@/components/Table";
 import { api } from "@/utils/api";
-import { Badge, Card } from "@chakra-ui/react";
-import { type Payment, PaymentStatus } from "@prisma/client";
+import { Card } from "@chakra-ui/react";
+import { type Payment } from "@prisma/client";
 import { useCallback, useMemo, useState } from "react";
 import { type Column } from "react-table";
 
@@ -33,16 +34,7 @@ const TradiePayment = () => {
       {
         Header: "STATUS",
         accessor: "paymentStatus",
-        Cell: ({ value }) => {
-          switch (value) {
-            case PaymentStatus.COMPLETED:
-              return <Badge colorScheme={"green"}>{value}</Badge>;
-            case PaymentStatus.PENDING:
-              return <Badge colorScheme={"gray"}>{value}</Badge>;
-            default:
-              return <Badge colorScheme={"red"}>{value}</Badge>;
-          }
-        },
+        Cell: ({ value }) => <PaymentStatusTag value={value} />,
       },
       {
         Header: "DATE",
