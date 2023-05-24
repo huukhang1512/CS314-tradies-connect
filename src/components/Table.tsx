@@ -40,7 +40,7 @@ export interface RowAction<T> {
   callback: (row: T) => void;
   actionName: string;
   icon?: JSX.Element;
-  shouldRender? : (row: T) => boolean;
+  shouldRender?: (row: T) => boolean;
 }
 export interface TableProps<T extends object> {
   columns: Column<T>[];
@@ -124,8 +124,7 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
                   <Th
                     {...column.getHeaderProps()}
                     color="white"
-                    key={`col-header-${j}`
-                  }
+                    key={`col-header-${j}`}
                   >
                     {column.render("Header")}
                   </Th>
@@ -140,12 +139,12 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
               return (
                 <Tr {...row.getRowProps()} key={`row-${i}`}>
                   {row.cells.map((cell, j) => (
-                    <Td 
-                    {...cell.getCellProps()} 
-                    key={`cell-${j}`}
-                    maxW={"400px"}
-                    overflow={"hidden"}
-                    textOverflow={"ellipsis"}
+                    <Td
+                      {...cell.getCellProps()}
+                      key={`cell-${j}`}
+                      maxW={"400px"}
+                      overflow={"hidden"}
+                      textOverflow={"ellipsis"}
                     >
                       {cell.render("Cell")}
                     </Td>
@@ -153,16 +152,20 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
                   {actions && (
                     <Td>
                       <VStack spacing={2} align={"flex-start"}>
-                        {actions.map((action) => (
-                          (action.shouldRender === undefined || action.shouldRender(row.values as T)) && <Button
-                            leftIcon={action.icon}
-                            variant={"link"}
-                            onClick={() => action.callback(row.values as T)}
-                            key={action.actionName}
-                          >
-                            {action.actionName}
-                          </Button>
-                        ))}
+                        {actions.map(
+                          (action) =>
+                            (action.shouldRender === undefined ||
+                              action.shouldRender(row.values as T)) && (
+                              <Button
+                                leftIcon={action.icon}
+                                variant={"link"}
+                                onClick={() => action.callback(row.values as T)}
+                                key={action.actionName}
+                              >
+                                {action.actionName}
+                              </Button>
+                            )
+                        )}
                       </VStack>
                     </Td>
                   )}
