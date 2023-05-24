@@ -38,6 +38,7 @@ import markAsCompleted from "@/assets/markAsCompleted.png";
 import { type Request } from "@prisma/client";
 import { type AcceptProposalInputType } from "@/server/api/routers/proposal";
 import { type CreateRatingInputType } from "@/server/api/routers/rating";
+import { PaymentReportGenerationButton } from "@/components/PaymentReportGenerationButton";
 const renderDate: React.FC<CellProps<Request, Date>> = (cell) => {
   return <>{cell.value.toLocaleString("en-AU")}</>;
 };
@@ -461,6 +462,9 @@ const RequestPopup = ({
                     Cancel Request
                   </Button>
                 )}
+              {request?.status === RequestStatus.COMPLETED && (
+                <PaymentReportGenerationButton request={request} />
+              )}
             </VStack>
           </form>
         </ModalBody>
