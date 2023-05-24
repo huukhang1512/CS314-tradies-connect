@@ -7,18 +7,21 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 async function main() {
   const fakeUsers = await createFakeUsers(30);
-  const users = await prisma.user.createMany({ data: fakeUsers });
-  const services = await prisma.service.createMany({ data: SERVICES });
-  const memberships = await prisma.membership.createMany({
-    data: [TRADIE_MEMBERSHIP, CLIENT_MEMBERSHIP],
-  });
   const fakeRequests = generateFakeRequestsFromUsersAndServices(
     fakeUsers,
     SERVICES
   );
-  const requests = await prisma.request.createMany({
-    data: fakeRequests,
-  });
+  const [users, services, memberships, requests] = await Promise.all([
+    await prisma.user.createMany({ data: fakeUsers }),
+    await prisma.service.createMany({ data: SERVICES }),
+    await prisma.membership.createMany({
+      data: [TRADIE_MEMBERSHIP, CLIENT_MEMBERSHIP],
+    }),
+    await prisma.request.createMany({
+      data: fakeRequests,
+    }),
+  ]);
+
   console.log("Users seeded", users);
   console.log("Services seeded", services);
   console.log("Memberships seeded", memberships);
