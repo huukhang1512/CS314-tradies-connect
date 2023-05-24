@@ -75,17 +75,21 @@ const TradieLinkItems: LinkItemProps[] = [
     icon: BiBadgeCheck,
     link: "/app/tradie/subscription",
   },
-  { name: "My payment", icon: IoWalletOutline, link: "" },
+  { name: "My payment", icon: IoWalletOutline, link: "/app/tradie/payment" },
 ];
 
 const ClientLinkItems: LinkItemProps[] = [
-  { name: "My request list", icon: AiOutlineFileDone, link: "/app/client/requests" },
+  {
+    name: "My request list",
+    icon: AiOutlineFileDone,
+    link: "/app/client/requests",
+  },
   {
     name: "Subcriptions",
     icon: BiBadgeCheck,
     link: "/app/client/subscription",
   },
-  { name: "My payment", icon: IoWalletOutline, link: "" },
+  { name: "My payment", icon: IoWalletOutline, link: "/app/client/payment" },
 ];
 
 const ProfileLinkItems: LinkItemProps[] = [

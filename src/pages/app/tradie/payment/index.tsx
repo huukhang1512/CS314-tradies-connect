@@ -8,8 +8,8 @@ import { type Payment } from "@prisma/client";
 import { useCallback, useMemo, useState } from "react";
 import { type Column } from "react-table";
 
-const PaymentManagement = () => {
-  const { mutateAsync } = api.payments.getPayments.useMutation();
+const TradiePayment = () => {
+  const { mutateAsync } = api.payments.getClientRequestPayment.useMutation();
   const [forceRefetch] = useState(true);
 
   const getData = useCallback(
@@ -21,11 +21,7 @@ const PaymentManagement = () => {
   const columns = useMemo<Column<Payment>[]>(
     () => [
       {
-        Header: "ID",
-        accessor: "id",
-      },
-      {
-        Header: "TYPE",
+        Header: "PAYMENT TYPE",
         accessor: "paymentType",
       },
       {
@@ -41,10 +37,6 @@ const PaymentManagement = () => {
         Cell: ({ value }) => <PaymentStatusTag value={value} />,
       },
       {
-        Header: "USER ID",
-        accessor: "userId",
-      },
-      {
         Header: "DATE",
         accessor: "createdAt",
         Cell: ({ value }) => <>{value.toLocaleDateString()}</>,
@@ -54,8 +46,8 @@ const PaymentManagement = () => {
   );
 
   return (
-    <SidebarWithHeader portal={Portal.ADMIN}>
-      <Card p={5} w={"full"}>
+    <SidebarWithHeader portal={Portal.TRADIE}>
+      <Card p={5}>
         <CustomTable
           refetchState={forceRefetch}
           getData={getData}
@@ -66,5 +58,5 @@ const PaymentManagement = () => {
   );
 };
 
-export default PaymentManagement;
+export default TradiePayment;
 export { getServerSidePropsWithAuth as getServerSideProps } from "@/components/getServerSidePropsWithAuth";
