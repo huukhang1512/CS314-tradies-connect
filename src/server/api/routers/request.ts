@@ -5,7 +5,18 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
-import { ProposalStatus, RequestStatus } from "@prisma/client";
+import { type Request, RequestStatus, type User, ProposalStatus, type Review } from "@prisma/client";
+import { getUserRating } from "@/utils/ratingUtils";
+import { isDistanceWithinRadius } from "@/utils/location/locationService";
+
+export interface RequestWithClient extends Request {
+  client: User;
+}
+
+export interface UserWithRating extends User {
+  rating: number;
+  reviews: Review[]
+}
 
 export const RequestSchema = z.object({
   id: z.string(),
@@ -52,6 +63,10 @@ const PaginatedGetRequestInput = z.object({
   perPage: z.number().positive().default(10),
 });
 
+const GetRequestByServiceInput = z.object({
+  serviceNames: z.array(z.string()),
+});
+
 const PaginatedGetRequestOutput = z.object({
   total: z.number(),
   page: z.number(),
@@ -69,6 +84,10 @@ const CancelRequestInput = z.object({
 
 const CancelRequestOutput = z.object({
   status: z.string(),
+});
+
+const GetRequestRespondersInput = z.object({
+  requestId: z.string(),
 });
 
 export const requestRouter = createTRPCRouter({
@@ -90,6 +109,11 @@ export const requestRouter = createTRPCRouter({
           status: "Service not found",
         };
       }
+      const user = await prisma.user.findUnique({
+        where: {
+          id,
+        },
+      });
       const serviceRate = service.rate;
       const request = await prisma.request.create({
         data: {
@@ -106,6 +130,9 @@ export const requestRouter = createTRPCRouter({
               id,
             },
           },
+          address: user?.address,
+          lat: user?.lat,
+          lng: user?.lng,
         },
         select: {
           id: true,
@@ -132,6 +159,68 @@ export const requestRouter = createTRPCRouter({
     .mutation(async (_req) => {
       return {};
     }),
+  getRequestsByService: protectedProcedure
+    .input(GetRequestByServiceInput)
+    .mutation(async (_req) => {
+      const { input, ctx } = _req;
+      const { id } = ctx.session.user;
+      const { serviceNames } = input;
+      const user = await prisma.user.findUnique({
+        where: {
+          id,
+        },
+      });
+
+      const proposals = await prisma.proposal.findMany({
+        where: {
+          providerId: id,
+          status: {
+            in: [ProposalStatus.NEW, ProposalStatus.ACCEPTED] 
+          } ,
+        }
+      });
+      const requestIds = proposals.length > 0 ? proposals.map((proposal) => proposal.requestId) : [];
+      let requests = await prisma.request.findMany({
+        where: {
+          serviceName: {
+            in: serviceNames,
+          },
+          status: RequestStatus.BROADCASTED,
+          clientId: {
+            not: id,
+          },
+          id: {
+            notIn: requestIds,
+          }
+
+        },
+        select: {
+          id: true,
+          serviceName: true,
+          status: true,
+          description: true,
+          createdAt: true,
+          unit: true,
+          price: true,
+          client: true,
+          clientId: true,
+          address: true,
+          lat: true,
+          lng: true,
+        },
+      });
+      requests = requests.filter((request) => {
+        if (user && request && user.lat && user.lng && request.lat && request.lng) {
+          return isDistanceWithinRadius(
+            { lat: +user.lat, lng: +user.lng },
+            { lat: +request.lat, lng: +request.lng },
+            10000
+          );
+        }
+        return true;
+      });
+      return requests;
+    }),
   getRequestsByUser: protectedProcedure
     .input(PaginatedGetRequestInput)
     .mutation(async (_req) => {
@@ -151,6 +240,9 @@ export const requestRouter = createTRPCRouter({
           unit: true,
           price: true,
           clientId: true,
+          address: true,
+          lat: true,
+          lng: true,
         },
         skip: (page - 1) * perPage,
         take: perPage,
@@ -279,5 +371,48 @@ export const requestRouter = createTRPCRouter({
           status: "Internal server error",
         };
       }
+    }),
+  getRequestResponders: protectedProcedure
+    .input(GetRequestRespondersInput)
+    .query(async (_req) => {
+      const { input, ctx } = _req;
+      const { id: userId } = ctx.session.user;
+      const { requestId } = input;
+
+      const request = await prisma.request.findFirst({
+        where: {
+          id: requestId,
+          clientId: userId,
+        },
+      });
+
+      if (!request) {
+        return []
+      }
+
+      const proposals = await prisma.proposal.findMany({
+        where: {
+          requestId,
+          status: ProposalStatus.NEW,
+        },
+        select: {
+          provider: true,
+        }
+      });
+
+      const responders = proposals.length > 0 ? proposals.map((p) => p.provider) : [];
+      for ( const responder of responders ) {
+        const reviews = await prisma.review.findMany({
+          where: {
+            recipientId: responder.id,
+          },
+
+          skip: 0,
+          take: 3,
+        });
+        (responder as UserWithRating).rating = await getUserRating(responder.id);
+        (responder as UserWithRating).reviews = reviews;
+      }
+      return responders as UserWithRating[];
     }),
 });
