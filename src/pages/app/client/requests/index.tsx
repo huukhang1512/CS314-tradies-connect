@@ -49,7 +49,9 @@ const renderDate: React.FC<CellProps<Request, Date>> = (cell) => {
   return <>{cell.value.toLocaleString("en-AU")}</>;
 };
 
-const renderStatus: React.FC<CellProps<Request, RequestStatus>> = (cell) => {
+export const renderStatus: React.FC<CellProps<Request, RequestStatus>> = (
+  cell
+) => {
   switch (cell.value) {
     case RequestStatus.IN_PROGRESS:
       return (
