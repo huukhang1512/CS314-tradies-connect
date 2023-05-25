@@ -5,7 +5,7 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
-import { RequestStatus } from "@prisma/client";
+import { ProposalStatus, RequestStatus } from "@prisma/client";
 
 export const RequestSchema = z.object({
   id: z.string(),
@@ -258,6 +258,16 @@ export const requestRouter = createTRPCRouter({
           },
           data: {
             status: RequestStatus.CANCELLED,
+            proposals: {
+              updateMany: {
+                where: {
+                  requestId,
+                },
+                data: {
+                  status: ProposalStatus.CANCELLED,
+                },
+              },
+            },
           },
         });
 

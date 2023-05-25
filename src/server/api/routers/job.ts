@@ -1,7 +1,16 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { prisma } from "@/server/db";
-import { RequestStatus } from "@prisma/client";
+import {
+  Membership,
+  MembershipType,
+  PaymentStatus,
+  PaymentType,
+  ProposalStatus,
+  RequestStatus,
+} from "@prisma/client";
+import { COMMISSION } from "@/constant";
+import { membershipRouter } from "./membership";
 
 const CompleteJobInput = z.object({
   id: z.string(),
@@ -41,6 +50,13 @@ export const jobRouter = createTRPCRouter({
         where: {
           id: requestId,
         },
+        include: {
+          client: {
+            include: {
+              memberships: true,
+            },
+          },
+        },
       });
       if (
         !request ||
@@ -60,6 +76,83 @@ export const jobRouter = createTRPCRouter({
           data: {
             status: RequestStatus.COMPLETED,
           },
+        });
+        await prisma.$transaction(async (tx) => {
+          // assuming that only one accepted proposal
+          const proposal = await tx.proposal.findFirst({
+            where: {
+              requestId: requestId,
+              status: ProposalStatus.ACCEPTED,
+            },
+            include: {
+              jobs: {
+                include: {
+                  proposal: true,
+                },
+              },
+            },
+          });
+
+          const job = proposal?.jobs.find(
+            (job) => job.proposal.id === proposal.id
+          );
+
+          await tx.proposal.update({
+            where: {
+              id: proposal?.id,
+            },
+            data: {
+              jobs: {
+                update: {
+                  where: {
+                    id: job?.id,
+                  },
+                  data: {
+                    finishedDate: new Date(),
+                    payment: {
+                      createMany: {
+                        data: [
+                          {
+                            userId: proposal?.providerId,
+                            amount: request.price - request.price * COMMISSION,
+                            paymentStatus: PaymentStatus.COMPLETED,
+                            paymentType: PaymentType.JOB_PAYOUT,
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          });
+
+          const userMembership = await membershipRouter
+            .createCaller({
+              prisma,
+              session: ctx.session,
+            })
+            .getUserActiveMembership();
+
+          // charge the client if no membership
+          if (
+            !userMembership.some(
+              (mem) => mem.membership.type === MembershipType.CLIENT
+            )
+          )
+            await tx.job.update({
+              where: { id: job?.id },
+              data: {
+                payment: {
+                  create: {
+                    userId: request.clientId,
+                    amount: request.price,
+                    paymentStatus: PaymentStatus.COMPLETED,
+                    paymentType: PaymentType.REQUEST,
+                  },
+                },
+              },
+            });
         });
 
         return {
