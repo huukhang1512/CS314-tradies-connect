@@ -1,6 +1,6 @@
 import SidebarWithHeader, { Portal } from "@/components/SidebarWithHeader";
-import CustomTable, { RowAction } from "@/components/Table";
-import { ProposalWithRequestAndJob } from "@/server/api/routers/proposal";
+import CustomTable, { type RowAction } from "@/components/Table";
+import { type ProposalWithRequestAndJob } from "@/server/api/routers/proposal";
 import { api } from "@/utils/api";
 import { CloseIcon } from "@chakra-ui/icons";
 import {
@@ -22,11 +22,11 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react";
-import { Proposal, ProposalStatus } from "@prisma/client";
+import { ProposalStatus } from "@prisma/client";
 import { useCallback, useMemo, useState } from "react";
-import { BsInfoCircle, BsStar } from "react-icons/bs";
+import { BsInfoCircle} from "react-icons/bs";
 import { GiRoundStar } from "react-icons/gi";
-import { CellProps, Column } from "react-table";
+import { type CellProps, type Column } from "react-table";
 
 type DetailPopUpProps = {
   isOpen: boolean;
