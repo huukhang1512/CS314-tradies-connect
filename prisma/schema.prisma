@@ -64,6 +64,7 @@ model User {
 model Service {
     name        String    @id
     rate        Float
+    unit        String    @default("Unit")
     description String    @default("No description provided")
     users       User[]
     requests    Request[]
@@ -133,6 +134,7 @@ model UserMembership {
     membershipId String
     createdAt    DateTime   @default(now())
     expiredAt    DateTime?
+    isAutoRenew  Boolean    @default(true)
 
     @@id([userId, membershipId])
 }

@@ -134,12 +134,7 @@ export const userRouter = createTRPCRouter({
       }
       return {
         data: {
-          ...user,
-          providedServices: user.providedServices.map((service) => ({
-            name: service.name,
-            rate: service.rate,
-            description: service.description,
-          })),
+          ...user
         },
       };
     }),

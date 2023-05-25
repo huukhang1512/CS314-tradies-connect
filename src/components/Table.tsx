@@ -21,13 +21,8 @@ import {
   VStack,
   HStack,
 } from "@chakra-ui/react";
-import {
-  ArrowRightIcon,
-  ArrowLeftIcon,
-  ChevronRightIcon,
-  ChevronLeftIcon,
-} from "@chakra-ui/icons";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { ChevronRightIcon, ChevronLeftIcon } from "@chakra-ui/icons";
+import { useState, useEffect, useCallback } from "react";
 
 export interface PaginatedData<T> {
   data: T[];
@@ -40,7 +35,7 @@ export interface RowAction<T> {
   callback: (row: T) => void;
   actionName: string;
   icon?: JSX.Element;
-  shouldRender? : (row: T) => boolean;
+  shouldRender?: (row: T) => boolean;
 }
 export interface TableProps<T extends object> {
   columns: Column<T>[];
@@ -51,20 +46,12 @@ export interface TableProps<T extends object> {
 
 const CustomTable = <T extends object>(props: TableProps<T>) => {
   const { columns, getData, actions } = props;
-  const [{ pageIndex, pageSize }, setPagination] = useState({
+  const [pagination, setPagination] = useState({
     pageIndex: 1,
     pageSize: 10,
   });
 
-  const pagination = useMemo(
-    () => ({
-      pageIndex,
-      pageSize,
-    }),
-    [pageIndex, pageSize]
-  );
-
-  const [_data, setData] = useState<PaginatedData<T>>({
+  const [data, setData] = useState<PaginatedData<T>>({
     data: [],
     page: 0,
     perPage: 10,
@@ -72,9 +59,9 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
   });
 
   const fetchData = useCallback(async () => {
-    const data = await getData(pageIndex, pageSize);
+    const data = await getData(pagination.pageIndex, pagination.pageSize);
     setData(data);
-  }, [getData, pageIndex, pageSize]);
+  }, [getData, pagination.pageIndex, pagination.pageSize]);
 
   useEffect(() => {
     if (props.refetchState) {
@@ -82,9 +69,15 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
     }
   }, [fetchData, props.refetchState]);
 
-  const data = useMemo(() => _data, [_data]);
-
-  const instance = useTable<T>(
+  const {
+    getTableProps,
+    getTableBodyProps,
+    headerGroups,
+    prepareRow,
+    page, // Instead of using 'rows', we'll use page,
+    pageOptions,
+    gotoPage,
+  } = useTable<T>(
     {
       columns,
       data: data?.data || [],
@@ -92,27 +85,10 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
         pagination,
       },
       onPaginationChange: setPagination,
+      manualPagination: true,
     },
     usePagination
   );
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    prepareRow,
-    page, // Instead of using 'rows', we'll use page,
-    // which has only the rows for the active page
-
-    // The rest of these things are super handy, too ;)
-    canPreviousPage,
-    canNextPage,
-    pageOptions,
-    pageCount,
-    gotoPage,
-    nextPage,
-    previousPage,
-    setPageSize,
-  } = instance;
   return (
     <>
       <TableContainer rounded={"md"} w={"full"} overflowX={"auto"}>
@@ -124,8 +100,7 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
                   <Th
                     {...column.getHeaderProps()}
                     color="white"
-                    key={`col-header-${j}`
-                  }
+                    key={`col-header-${j}`}
                   >
                     {column.render("Header")}
                   </Th>
@@ -140,12 +115,12 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
               return (
                 <Tr {...row.getRowProps()} key={`row-${i}`}>
                   {row.cells.map((cell, j) => (
-                    <Td 
-                    {...cell.getCellProps()} 
-                    key={`cell-${j}`}
-                    maxW={"400px"}
-                    overflow={"hidden"}
-                    textOverflow={"ellipsis"}
+                    <Td
+                      {...cell.getCellProps()}
+                      key={`cell-${j}`}
+                      maxW={"400px"}
+                      overflow={"hidden"}
+                      textOverflow={"ellipsis"}
                     >
                       {cell.render("Cell")}
                     </Td>
@@ -153,16 +128,20 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
                   {actions && (
                     <Td>
                       <VStack spacing={2} align={"flex-start"}>
-                        {actions.map((action) => (
-                          (action.shouldRender === undefined || action.shouldRender(row.values as T)) && <Button
-                            leftIcon={action.icon}
-                            variant={"link"}
-                            onClick={() => action.callback(row.values as T)}
-                            key={action.actionName}
-                          >
-                            {action.actionName}
-                          </Button>
-                        ))}
+                        {actions.map(
+                          (action) =>
+                            (action.shouldRender === undefined ||
+                              action.shouldRender(row.values as T)) && (
+                              <Button
+                                leftIcon={action.icon}
+                                variant={"link"}
+                                onClick={() => action.callback(row.values as T)}
+                                key={action.actionName}
+                              >
+                                {action.actionName}
+                              </Button>
+                            )
+                        )}
                       </VStack>
                     </Td>
                   )}
@@ -176,32 +155,29 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
         <Text flexShrink="0" color="text.third" mt={3}>
           Showing{" "}
           <Text as="span">
-            {data?.total === 0 ? 0 : (pageIndex - 1) * pageSize + 1}
+            {data?.total === 0
+              ? 0
+              : (pagination.pageIndex - 1) * pagination.pageSize + 1}
             {"-"}
-            {Math.min((pageIndex + 1) * pageSize, data?.total)}
+            {Math.min(pagination.pageIndex * pagination.pageSize, data?.total)}
           </Text>{" "}
           of <Text as="span">{data?.total}</Text>
         </Text>
       </Flex>
       <HStack justifyContent="space-between" alignItems="center" w="full">
-        <HStack>
-          <Tooltip label="First Page">
-            <IconButton
-              aria-label="First Page"
-              onClick={() => gotoPage(0)}
-              isDisabled={!canPreviousPage}
-              icon={<ArrowLeftIcon h={3} w={3} />}
-            />
-          </Tooltip>
-          <Tooltip label="Previous Page">
-            <IconButton
-              aria-label="Previous Page"
-              onClick={previousPage}
-              isDisabled={!canPreviousPage}
-              icon={<ChevronLeftIcon h={6} w={6} />}
-            />
-          </Tooltip>
-        </HStack>
+        <Tooltip label="Previous Page">
+          <IconButton
+            aria-label="Previous Page"
+            onClick={() => {
+              setPagination({
+                pageIndex: pagination.pageIndex - 1,
+                pageSize: pagination.pageSize,
+              });
+            }}
+            isDisabled={pagination.pageIndex === 1}
+            icon={<ChevronLeftIcon h={6} w={6} />}
+          />
+        </Tooltip>
         <HStack alignItems="center">
           <Text flexShrink="0">Go to page:</Text>{" "}
           <NumberInput
@@ -213,7 +189,7 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
               const page = v ? v - 1 : 0;
               gotoPage(page);
             }}
-            defaultValue={pageIndex}
+            defaultValue={pagination.pageIndex}
           >
             <NumberInputField />
             <NumberInputStepper>
@@ -223,9 +199,12 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
           </NumberInput>
           <Select
             w={32}
-            value={pageSize}
+            value={pagination.pageSize}
             onChange={(e) => {
-              setPageSize(Number(e.target.value));
+              setPagination({
+                ...pagination,
+                pageSize: Number(e.target.value),
+              });
             }}
           >
             {[10, 20, 30, 40, 50].map((pageSize) => (
@@ -235,25 +214,22 @@ const CustomTable = <T extends object>(props: TableProps<T>) => {
             ))}
           </Select>
         </HStack>
-
-        <HStack>
-          <Tooltip label="Next Page">
-            <IconButton
-              aria-label="Next Page"
-              onClick={nextPage}
-              isDisabled={!canNextPage}
-              icon={<ChevronRightIcon h={6} w={6} />}
-            />
-          </Tooltip>
-          <Tooltip label="Last Page">
-            <IconButton
-              aria-label="Last Page"
-              onClick={() => gotoPage(pageCount - 1)}
-              isDisabled={!canNextPage}
-              icon={<ArrowRightIcon h={3} w={3} />}
-            />
-          </Tooltip>
-        </HStack>
+        <Tooltip label="Next Page">
+          <IconButton
+            aria-label="Next Page"
+            isDisabled={
+              pagination.pageIndex ===
+              Math.round((data?.total || 1) / pagination.pageSize)
+            }
+            onClick={() =>
+              setPagination({
+                pageIndex: pagination.pageIndex + 1,
+                pageSize: pagination.pageSize,
+              })
+            }
+            icon={<ChevronRightIcon h={6} w={6} />}
+          />
+        </Tooltip>
       </HStack>
     </>
   );

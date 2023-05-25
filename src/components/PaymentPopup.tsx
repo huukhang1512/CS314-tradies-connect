@@ -135,6 +135,12 @@ export const PaymentPopup = ({
                 w={"full"}
                 textTransform={"capitalize"}
                 type={"submit"}
+                isDisabled={
+                  formik.values.cardNumber.length === 0 ||
+                  formik.values.cvv.length === 0 ||
+                  formik.values.expiryDate.length === 0
+                }
+                isLoading={formik.isSubmitting}
               >
                 Submit
               </Button>

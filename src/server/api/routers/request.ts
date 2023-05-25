@@ -350,6 +350,16 @@ export const requestRouter = createTRPCRouter({
           },
           data: {
             status: RequestStatus.CANCELLED,
+            proposals: {
+              updateMany: {
+                where: {
+                  requestId,
+                },
+                data: {
+                  status: ProposalStatus.CANCELLED,
+                },
+              },
+            },
           },
         });
 

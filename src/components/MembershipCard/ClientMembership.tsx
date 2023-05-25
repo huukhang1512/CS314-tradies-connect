@@ -7,35 +7,57 @@ import { useRouter } from "next/router";
 
 export const ClientMembership = ({
   activeMemberships,
+  refetch,
 }: {
   activeMemberships: UserMembership[];
+  refetch: () => Promise<unknown>;
 }) => {
   const router = useRouter();
   const [isPurchasingPopup, setIsPurchasingPopup] = useState(false);
   const [chosenMembership, setChosenMembership] = useState<Membership>();
   const { data: membershipData, isLoading: isLoadingMembership } =
     api.memberships.getClientMemberships.useQuery();
-  const { mutateAsync } = api.memberships.subscribeToMembership.useMutation();
+  const { mutateAsync: subscribe, isLoading: isSubcribing } =
+    api.memberships.subscribeToMembership.useMutation();
+  const { mutateAsync: cancel, isLoading: isCancelling } =
+    api.memberships.cancelMembership.useMutation();
 
   const handlePurchaseClick = (membership: Membership) => {
+    if (
+      activeMemberships?.some(
+        (activeMembership) =>
+          activeMembership.membershipId === membership.id &&
+          !activeMembership.isAutoRenew
+      )
+    ) {
+      void subscribeToMembership(membership);
+      return;
+    }
     setIsPurchasingPopup(true);
     setChosenMembership(membership);
   };
 
-  const subscribeToMembership = async () => {
-    await mutateAsync({ membershipId: chosenMembership?.id || "" });
+  const subscribeToMembership = async (membership: Membership) => {
+    await subscribe({ membershipId: membership.id });
     await router.push("/app/client");
+  };
+
+  const cancelMembership = async (membership: Membership) => {
+    await cancel({ membershipId: membership.id });
+    await refetch();
   };
 
   if (isLoadingMembership) return <>Loading...</>;
   return (
     <>
-      <PaymentPopup
-        isOpen={isPurchasingPopup}
-        onClose={() => setIsPurchasingPopup(false)}
-        onSubmit={subscribeToMembership}
-        total={chosenMembership?.price || 0}
-      />
+      {chosenMembership && (
+        <PaymentPopup
+          isOpen={isPurchasingPopup}
+          onClose={() => setIsPurchasingPopup(false)}
+          onSubmit={() => subscribeToMembership(chosenMembership)}
+          total={chosenMembership?.price}
+        />
+      )}
       {membershipData?.map((membership: Membership) => (
         <BaseMembershipCard
           membership={membership}
@@ -43,14 +65,17 @@ export const ClientMembership = ({
           hasPurchased={
             !!activeMemberships?.some(
               (activeMembership) =>
-                activeMembership.membershipId === membership.id
+                activeMembership.membershipId === membership.id &&
+                activeMembership.isAutoRenew
             )
           }
+          onCancel={cancelMembership}
           onPurchase={handlePurchaseClick}
           features={[
             "Fixed membership fee annually",
             "Unlimited assistance callouts",
           ]}
+          isLoading={isSubcribing || isCancelling}
         />
       ))}
     </>

@@ -9,6 +9,7 @@ import {
   Card,
   Divider,
   FormControl,
+  FormHelperText,
   FormLabel,
   Heading,
   HStack,
@@ -32,7 +33,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BsCheckCircle, BsInfoCircle, BsStar } from "react-icons/bs";
 import { AiOutlineMessage } from "react-icons/ai";
-import { RequestStatus } from "@prisma/client";
+import { MembershipType, RequestStatus } from "@prisma/client";
 import { type CellProps, type Column } from "react-table";
 import { CloseIcon, ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import { type FormikValues, useFormik } from "formik";
@@ -42,6 +43,7 @@ import { type AcceptProposalInputType } from "@/server/api/routers/proposal";
 import { type CreateRatingInputType } from "@/server/api/routers/rating";
 import { CiLocationOn } from "react-icons/ci";
 import { GiRoundStar } from "react-icons/gi";
+import { PaymentReportGenerationButton } from "@/components/PaymentReportGenerationButton";
 
 const renderDate: React.FC<CellProps<Request, Date>> = (cell) => {
   return <>{cell.value.toLocaleString("en-AU")}</>;
@@ -417,6 +419,8 @@ const RequestPopup = ({
   onCancel,
 }: RequestPopupProps) => {
   const { data: services } = api.services.getServices.useQuery();
+  const { data: activeMembership } =
+    api.memberships.getUserActiveMembership.useQuery();
 
   const initialValues = useMemo<InputType>(() => {
     if (mode === "update" && request !== undefined) {
@@ -430,7 +434,7 @@ const RequestPopup = ({
       return {
         serviceName: services?.at(0)?.name || "",
         description: "",
-        unit: 0,
+        unit: 1,
         id: "",
       };
     }
@@ -443,6 +447,23 @@ const RequestPopup = ({
       await onSubmit(values);
     },
   });
+
+  const getServiceFromName = useCallback(
+    (serviceName: string) =>
+      services?.find((service) => service.name === serviceName),
+    [services]
+  );
+
+  const hasClientMembership = () => {
+    const currentClientMembership = activeMembership?.filter(
+      (mem) => mem.membership.type === MembershipType.CLIENT
+    );
+    if (request)
+      return currentClientMembership?.some(
+        (mem) => mem.createdAt < request.createdAt // request made before membership or not
+      );
+    return currentClientMembership?.length !== 0;
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
@@ -495,13 +516,15 @@ const RequestPopup = ({
                 </Select>
               </FormControl>
               <FormControl>
-                <FormLabel>Unit</FormLabel>
+                <FormLabel>Quantity</FormLabel>
                 <InputGroup>
-                  <InputLeftAddon>$</InputLeftAddon>
+                  <InputLeftAddon>
+                    {getServiceFromName(formik.values.serviceName)?.unit}
+                  </InputLeftAddon>
                   <Input
                     id={"unit"}
-                    name={"unit"}
                     type={"number"}
+                    name={"unit"}
                     onChange={formik.handleChange}
                     variant={"filled"}
                     bg={"background.gray"}
@@ -510,6 +533,9 @@ const RequestPopup = ({
                     value={formik.values.unit}
                   />
                 </InputGroup>
+                <FormHelperText>
+                  {getServiceFromName(formik.values.serviceName)?.description}
+                </FormHelperText>
               </FormControl>
               <FormControl>
                 <FormLabel>Description</FormLabel>
@@ -525,6 +551,17 @@ const RequestPopup = ({
                   h={300}
                 />
               </FormControl>
+              <HStack w={"full"} justify={"space-between"}>
+                <Text>Total price:</Text>
+                <Text fontWeight={"bold"}>
+                  {hasClientMembership()
+                    ? "Free"
+                    : `$${
+                        (getServiceFromName(formik.values.serviceName)?.rate ||
+                          1) * formik.values.unit
+                      }`}
+                </Text>
+              </HStack>
               {(mode === "create" ||
                 request?.status == RequestStatus.BROADCASTED ||
                 request?.status == RequestStatus.IN_PROGRESS) && (
@@ -544,6 +581,9 @@ const RequestPopup = ({
                     Cancel Request
                   </Button>
                 )}
+              {request?.status === RequestStatus.COMPLETED && (
+                <PaymentReportGenerationButton request={request} />
+              )}
             </VStack>
           </form>
         </ModalBody>

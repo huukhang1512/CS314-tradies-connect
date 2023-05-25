@@ -16,6 +16,8 @@ describe("Base Membership Card", () => {
           createdAt: new Date(),
           id: "test-membership-id",
         }}
+        isLoading={false}
+        onCancel={async () => await new Promise(() => console.log("void"))}
         onPurchase={() => console.log("void")}
       />
     );

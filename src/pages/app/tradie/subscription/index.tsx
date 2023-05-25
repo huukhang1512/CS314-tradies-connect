@@ -5,14 +5,20 @@ import { api } from "@/utils/api";
 import { VStack } from "@chakra-ui/react";
 
 const ClientSubscription = () => {
-  const { isLoading, data: activeMemberships } =
-    api.memberships.getUserActiveMembership.useQuery();
+  const {
+    isLoading,
+    data: activeMemberships,
+    refetch,
+  } = api.memberships.getUserActiveMembership.useQuery();
   return (
     <>
       <SidebarWithHeader portal={Portal.TRADIE}>
         <VStack spacing={5}>
           {!isLoading && activeMemberships && (
-            <TradieMembership activeMemberships={activeMemberships} />
+            <TradieMembership
+              refetch={refetch}
+              activeMemberships={activeMemberships}
+            />
           )}
         </VStack>
       </SidebarWithHeader>

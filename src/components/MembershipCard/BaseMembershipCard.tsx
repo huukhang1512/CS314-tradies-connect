@@ -9,11 +9,15 @@ export const BaseMembershipCard = ({
   membership,
   hasPurchased,
   onPurchase,
+  onCancel,
+  isLoading,
   features,
 }: {
   membership: Membership;
   hasPurchased: boolean;
   onPurchase: (membership: Membership) => void;
+  onCancel: (membership: Membership) => Promise<void>;
+  isLoading: boolean;
   features?: string[];
 }) => {
   return (
@@ -33,6 +37,7 @@ export const BaseMembershipCard = ({
         align={"center"}
         justify={"space-between"}
         minH={{ lg: "450px" }}
+        spacing={2}
         h={"full"}
         w={"full"}
       >
@@ -62,11 +67,13 @@ export const BaseMembershipCard = ({
         </VStack>
         <Button
           w={"full"}
-          variant={"primary"}
-          isDisabled={hasPurchased}
-          onClick={() => onPurchase(membership)}
+          variant={hasPurchased ? "danger" : "primary"}
+          isLoading={isLoading}
+          onClick={() =>
+            hasPurchased ? void onCancel(membership) : onPurchase(membership)
+          }
         >
-          {hasPurchased ? "Purchased" : "Purchase"}
+          {hasPurchased ? "Cancel Membership" : "Subscribe"}
         </Button>
       </VStack>
       <VStack w={"full"} h={"full"} minH={{ lg: "450px" }} justify={"center"}>

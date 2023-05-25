@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { prisma } from "@/server/db";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { MembershipType, PaymentStatus, PaymentType } from "@prisma/client";
 import { PaginatedInput } from "@/types/paginatedInput";
@@ -8,10 +7,15 @@ const SubscribeToMembershipInput = z.object({
   membershipId: z.string(),
 });
 
+const CancelMembershipInput = z.object({
+  membershipId: z.string(),
+});
+
 export const membershipRouter = createTRPCRouter({
   getMemberships: protectedProcedure
     .input(PaginatedInput)
     .mutation(async (req) => {
+      const { prisma } = req.ctx;
       const memberships = await prisma.membership.findMany({
         skip: (req.input.page - 1) * req.input.perPage,
         take: req.input.perPage,
@@ -25,7 +29,8 @@ export const membershipRouter = createTRPCRouter({
       };
     }),
 
-  getClientMemberships: protectedProcedure.query(async () => {
+  getClientMemberships: protectedProcedure.query(async (req) => {
+    const { prisma } = req.ctx;
     return await prisma.membership.findMany({
       where: {
         type: MembershipType.CLIENT,
@@ -33,7 +38,8 @@ export const membershipRouter = createTRPCRouter({
     });
   }),
 
-  getTradieMemberships: protectedProcedure.query(async () => {
+  getTradieMemberships: protectedProcedure.query(async (req) => {
+    const { prisma } = req.ctx;
     return await prisma.membership.findMany({
       where: {
         type: MembershipType.PROVIDER,
@@ -42,7 +48,7 @@ export const membershipRouter = createTRPCRouter({
   }),
 
   getUserActiveMembership: protectedProcedure.query(async (req) => {
-    const { session } = req.ctx;
+    const { session, prisma } = req.ctx;
     return await prisma.userMembership.findMany({
       where: {
         user: {
@@ -62,29 +68,104 @@ export const membershipRouter = createTRPCRouter({
   subscribeToMembership: protectedProcedure
     .input(SubscribeToMembershipInput)
     .mutation(async (req) => {
-      const { session } = req.ctx;
+      const { session, prisma } = req.ctx;
       const { membershipId } = req.input;
+      const today = new Date();
       const membership = await prisma.membership.findUnique({
         where: { id: membershipId },
       });
-      const today = new Date();
-      today.setDate(today.getDate() + (membership?.duration || 0));
+      if (!membership) throw new Error("Membership not found");
+      const userMembership = await prisma.userMembership.findUnique({
+        where: {
+          userId_membershipId: {
+            userId: session.user.id,
+            membershipId: membership.id,
+          },
+        },
+      });
+      // if user membership is cancelled but has not expired -> do not charge, but renewed
+      if (
+        userMembership &&
+        !userMembership.isAutoRenew &&
+        userMembership.expiredAt &&
+        userMembership.expiredAt > today
+      ) {
+        await prisma.userMembership.update({
+          where: {
+            userId_membershipId: {
+              userId: session.user.id,
+              membershipId: membership.id,
+            },
+          },
+          data: {
+            isAutoRenew: true,
+          },
+        });
+        return;
+      }
+      // if the membership is expired with no autorenew
+      today.setDate(today.getDate() + membership.duration);
       await prisma.user.update({
         where: {
           id: session.user.id,
         },
         data: {
           memberships: {
-            create: { membershipId: membershipId, expiredAt: today },
+            ...(userMembership
+              ? {
+                  update: {
+                    data: { membershipId, expiredAt: today },
+                    where: {
+                      userId_membershipId: {
+                        userId: session.user.id,
+                        membershipId: membership.id,
+                      },
+                    },
+                  },
+                }
+              : { create: { membershipId, expiredAt: today } }),
           },
           payments: {
             create: {
-              amount: membership?.price || 0,
+              amount: membership.price,
               paymentStatus: PaymentStatus.COMPLETED,
               paymentType:
                 membership?.type === MembershipType.CLIENT
                   ? PaymentType.CLIENT_MEMBERSHIP
                   : PaymentType.PROVIDER_MEMBERSHIP,
+            },
+          },
+        },
+      });
+    }),
+
+  cancelMembership: protectedProcedure
+    .input(CancelMembershipInput)
+    .mutation(async (req) => {
+      const { session, prisma } = req.ctx;
+      const { membershipId } = req.input;
+      const membership = await prisma.membership.findUnique({
+        where: { id: membershipId },
+      });
+      if (!membership) {
+        throw new Error("Membership not found");
+      }
+      await prisma.user.update({
+        where: {
+          id: session.user.id,
+        },
+        data: {
+          memberships: {
+            update: {
+              where: {
+                userId_membershipId: {
+                  userId: session.user.id,
+                  membershipId: membership.id,
+                },
+              },
+              data: {
+                isAutoRenew: false,
+              },
             },
           },
         },

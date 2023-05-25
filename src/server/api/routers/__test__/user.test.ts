@@ -47,6 +47,7 @@ test("me test", async () => {
         membershipId: "membership-id",
         createdAt: new Date(),
         expiredAt: new Date(),
+        isAutoRenew: true,
       },
     ],
   };

@@ -6,15 +6,21 @@ import { VStack } from "@chakra-ui/react";
 import { api } from "@/utils/api";
 
 const Subscription = () => {
-  const { data: activeMemberships } =
+  const { data: activeMemberships, refetch } =
     api.memberships.getUserActiveMembership.useQuery();
 
   if (!activeMemberships) return <>Loading...</>;
   return (
     <SidebarWithHeader portal={Portal.PROFILE}>
       <VStack spacing={5}>
-        <ClientMembership activeMemberships={activeMemberships} />
-        <TradieMembership activeMemberships={activeMemberships} />
+        <ClientMembership
+          refetch={refetch}
+          activeMemberships={activeMemberships}
+        />
+        <TradieMembership
+          refetch={refetch}
+          activeMemberships={activeMemberships}
+        />
       </VStack>
     </SidebarWithHeader>
   );
