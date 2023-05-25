@@ -21,13 +21,8 @@ import {
   VStack,
   HStack,
 } from "@chakra-ui/react";
-import {
-  ArrowRightIcon,
-  ArrowLeftIcon,
-  ChevronRightIcon,
-  ChevronLeftIcon,
-} from "@chakra-ui/icons";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { ChevronRightIcon, ChevronLeftIcon } from "@chakra-ui/icons";
+import { useState, useEffect, useCallback } from "react";
 
 export interface PaginatedData<T> {
   data: T[];
