@@ -5,7 +5,13 @@ import {
   createTRPCRouter,
   protectedProcedure,
 } from "@/server/api/trpc";
-import { type Request, RequestStatus, type User, ProposalStatus, type Review } from "@prisma/client";
+import {
+  type Request,
+  RequestStatus,
+  type User,
+  ProposalStatus,
+  type Review,
+} from "@prisma/client";
 import { getUserRating } from "@/utils/ratingUtils";
 import { isDistanceWithinRadius } from "@/utils/location/locationService";
 
@@ -15,7 +21,7 @@ export interface RequestWithClient extends Request {
 
 export interface UserWithRating extends User {
   rating: number;
-  reviews: Review[]
+  reviews: Review[];
 }
 
 export const RequestSchema = z.object({
@@ -151,13 +157,25 @@ export const requestRouter = createTRPCRouter({
         data: request,
       };
     }),
+
   getRequests: adminProcedure
-    .meta({ openapi: { method: "GET", path: "/requests" } })
-    .input(z.object({}))
-    .output(z.object({}))
-    // eslint-disable-next-line @typescript-eslint/require-await
-    .mutation(async (_req) => {
-      return {};
+    .input(PaginatedGetRequestInput)
+    .mutation(async (req) => {
+      const { input, ctx } = req;
+      const { prisma } = ctx;
+      const { page, perPage } = input;
+      const requests = await prisma.request.findMany({
+        skip: (page - 1) * perPage,
+        take: perPage,
+      });
+      const total = await prisma.request.count();
+
+      return {
+        total,
+        page,
+        perPage,
+        data: requests,
+      };
     }),
   getRequestsByService: protectedProcedure
     .input(GetRequestByServiceInput)
@@ -175,11 +193,14 @@ export const requestRouter = createTRPCRouter({
         where: {
           providerId: id,
           status: {
-            in: [ProposalStatus.NEW, ProposalStatus.ACCEPTED] 
-          } ,
-        }
+            in: [ProposalStatus.NEW, ProposalStatus.ACCEPTED],
+          },
+        },
       });
-      const requestIds = proposals.length > 0 ? proposals.map((proposal) => proposal.requestId) : [];
+      const requestIds =
+        proposals.length > 0
+          ? proposals.map((proposal) => proposal.requestId)
+          : [];
       let requests = await prisma.request.findMany({
         where: {
           serviceName: {
@@ -191,8 +212,7 @@ export const requestRouter = createTRPCRouter({
           },
           id: {
             notIn: requestIds,
-          }
-
+          },
         },
         select: {
           id: true,
@@ -210,7 +230,14 @@ export const requestRouter = createTRPCRouter({
         },
       });
       requests = requests.filter((request) => {
-        if (user && request && user.lat && user.lng && request.lat && request.lng) {
+        if (
+          user &&
+          request &&
+          user.lat &&
+          user.lng &&
+          request.lat &&
+          request.lng
+        ) {
           return isDistanceWithinRadius(
             { lat: +user.lat, lng: +user.lng },
             { lat: +request.lat, lng: +request.lng },
@@ -387,7 +414,7 @@ export const requestRouter = createTRPCRouter({
       });
 
       if (!request) {
-        return []
+        return [];
       }
 
       const proposals = await prisma.proposal.findMany({
@@ -397,11 +424,12 @@ export const requestRouter = createTRPCRouter({
         },
         select: {
           provider: true,
-        }
+        },
       });
 
-      const responders = proposals.length > 0 ? proposals.map((p) => p.provider) : [];
-      for ( const responder of responders ) {
+      const responders =
+        proposals.length > 0 ? proposals.map((p) => p.provider) : [];
+      for (const responder of responders) {
         const reviews = await prisma.review.findMany({
           where: {
             recipientId: responder.id,
@@ -410,7 +438,9 @@ export const requestRouter = createTRPCRouter({
           skip: 0,
           take: 3,
         });
-        (responder as UserWithRating).rating = await getUserRating(responder.id);
+        (responder as UserWithRating).rating = await getUserRating(
+          responder.id
+        );
         (responder as UserWithRating).reviews = reviews;
       }
       return responders as UserWithRating[];
