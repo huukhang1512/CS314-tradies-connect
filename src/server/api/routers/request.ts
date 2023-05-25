@@ -165,16 +165,6 @@ export const requestRouter = createTRPCRouter({
       const { prisma } = ctx;
       const { page, perPage } = input;
       const requests = await prisma.request.findMany({
-        select: {
-          id: true,
-          serviceName: true,
-          status: true,
-          description: true,
-          createdAt: true,
-          unit: true,
-          price: true,
-          clientId: true,
-        },
         skip: (page - 1) * perPage,
         take: perPage,
       });
