@@ -6,7 +6,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 async function main() {
-  const fakeUsers = await createFakeUsers(30);
+  const fakeUsers = await createFakeUsers(100);
   const fakeRequests = generateFakeRequestsFromUsersAndServices(
     fakeUsers,
     SERVICES

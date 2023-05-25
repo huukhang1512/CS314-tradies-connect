@@ -1,7 +1,13 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { prisma } from "@/server/db";
-import { RequestStatus } from "@prisma/client";
+import {
+  PaymentStatus,
+  PaymentType,
+  ProposalStatus,
+  RequestStatus,
+} from "@prisma/client";
+import { COMMISSION } from "@/constant";
 
 const CompleteJobInput = z.object({
   id: z.string(),
@@ -59,6 +65,51 @@ export const jobRouter = createTRPCRouter({
           },
           data: {
             status: RequestStatus.COMPLETED,
+          },
+        });
+
+        // assuming that only one accepted proposal
+        const proposal = await prisma.proposal.findFirst({
+          where: {
+            requestId: requestId,
+            status: ProposalStatus.ACCEPTED,
+          },
+          include: {
+            jobs: {
+              include: {
+                proposal: true,
+              },
+            },
+          },
+        });
+
+        const jobId = proposal?.jobs.find(
+          (job) => job.proposal.id === proposal.id
+        )?.id;
+
+        await prisma.proposal.update({
+          where: {
+            id: proposal?.id,
+          },
+          data: {
+            jobs: {
+              update: {
+                where: {
+                  id: jobId,
+                },
+                data: {
+                  finishedDate: new Date(),
+                  payment: {
+                    create: {
+                      userId: proposal?.providerId,
+                      amount: request.price - request.price * COMMISSION,
+                      paymentStatus: PaymentStatus.COMPLETED,
+                      paymentType: PaymentType.JOB_PAYOUT,
+                    },
+                  },
+                },
+              },
+            },
           },
         });
 

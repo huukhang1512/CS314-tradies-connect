@@ -9,7 +9,7 @@ import { useCallback, useMemo, useState } from "react";
 import { type Column } from "react-table";
 
 const TradiePayment = () => {
-  const { mutateAsync } = api.payments.getClientRequestPayment.useMutation();
+  const { mutateAsync } = api.payments.getTradieJobPayoutPayment.useMutation();
   const [forceRefetch] = useState(true);
 
   const getData = useCallback(
