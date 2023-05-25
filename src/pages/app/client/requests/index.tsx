@@ -4,7 +4,10 @@ import CustomTable, { type RowAction } from "@/components/Table";
 import Rating from "@/components/Rating";
 import { api } from "@/utils/api";
 import {
+  Avatar,
   Button,
+  Card,
+  Divider,
   FormControl,
   FormLabel,
   Heading,
@@ -26,17 +29,20 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BsCheckCircle, BsInfoCircle, BsStar } from "react-icons/bs";
 import { AiOutlineMessage } from "react-icons/ai";
 import { RequestStatus } from "@prisma/client";
 import { type CellProps, type Column } from "react-table";
-import { CloseIcon } from "@chakra-ui/icons";
+import { CloseIcon, ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import { type FormikValues, useFormik } from "formik";
 import markAsCompleted from "@/assets/markAsCompleted.png";
 import { type Request } from "@prisma/client";
 import { type AcceptProposalInputType } from "@/server/api/routers/proposal";
 import { type CreateRatingInputType } from "@/server/api/routers/rating";
+import { CiLocationOn } from "react-icons/ci";
+import { GiRoundStar } from "react-icons/gi";
+
 const renderDate: React.FC<CellProps<Request, Date>> = (cell) => {
   return <>{cell.value.toLocaleString("en-AU")}</>;
 };
@@ -94,37 +100,150 @@ type RespondersPopUpProps = {
 };
 
 const RespondersPopUp = (props: RespondersPopUpProps) => {
-  const { isOpen, onClose, request } = props;
+  const { isOpen, onClose, request, onSubmit } = props;
+  const [showReviews, setShowReviews] = useState<boolean[]>([]);
 
-  if (request) {
-    return (
-      <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
-        <ModalOverlay />
-        <ModalContent p={3}>
-          <HStack alignItems={"center"} justify={"space-between"} p={3}>
-            <ModalHeader whiteSpace={"nowrap"} p={0}>
-              Responders
-            </ModalHeader>
-            <IconButton
-              icon={<CloseIcon />}
-              onClick={() => onClose()}
-              size={"xs"}
-              borderColor={"gray"}
-              borderWidth={2}
-              p={0}
-              aria-label={"Close modal"}
-              isRound
-              variant={"ghost"}
-            />
-          </HStack>
-          <ModalBody p={3}>
-            <VStack spacing={3}></VStack>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
-    );
-  }
-  return <></>;
+  const { data: responders } = api.requests.getRequestResponders.useQuery({
+    requestId: request?.id || "",
+  });
+
+  useEffect(() => {
+    if (responders) {
+      setShowReviews(responders.map(() => false));
+    }
+  }, [responders]);
+  
+  const handleToggleReviews = useCallback(
+    (index: number) => {
+      setShowReviews((prev) => {
+        const newReviews = [...prev];
+        newReviews[index] = !newReviews[index];
+        return newReviews;
+      });
+    },
+    [setShowReviews]
+  );
+
+  if (!request || !responders) return <></>;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
+      <ModalOverlay />
+      <ModalContent p={3}>
+        <HStack alignItems={"center"} justify={"space-between"} p={3}>
+          <ModalHeader whiteSpace={"nowrap"} p={0}>
+            Responders
+          </ModalHeader>
+          <IconButton
+            icon={<CloseIcon />}
+            onClick={() => onClose()}
+            size={"xs"}
+            borderColor={"gray"}
+            borderWidth={2}
+            p={0}
+            aria-label={"Close modal"}
+            isRound
+            variant={"ghost"}
+          />
+        </HStack>
+        <ModalBody p={3}>
+          <VStack spacing={3}>
+            {responders.map((responder, index) => (
+              <Card key={responder.id} variant="outline" p={3}>
+                <VStack spacing={3}>
+                  <HStack w={"full"} spacing={4}>
+                    <Avatar
+                      size={"lg"}
+                      display={{ base: "none", md: "flex" }}
+                      src={responder.image || undefined}
+                      title={responder.name || undefined}
+                    />
+                    <VStack alignItems={"flex-start"} spacing={1} w={"full"}>
+                      <Text fontSize={"lg"} fontWeight={"semibold"}>
+                        {responder.name}
+                      </Text>
+                      <HStack>
+                        <CiLocationOn />
+                        <Text fontSize={"xs"} color={"gray"}>
+                          {responder.address}
+                        </Text>
+                      </HStack>
+                    </VStack>
+                  </HStack>
+                  <HStack w={"full"} justifyContent={"space-between"}>
+                    {responder.rating !== 0 ? 
+                    <>
+                      <Text>Rating:</Text>
+                      <HStack flexDir={"row"}>
+                        <Text>{responder.rating}</Text>
+                        <GiRoundStar size={"20px"} color={"#FFDB5E"} />
+                      </HStack>
+                    </>
+                    : 
+                    <Text>No rating</Text>}
+                  </HStack>
+                  <HStack
+                    w={"full"}
+                    flexDir={"row-reverse"}
+                    justifyContent={"space-between"}
+                  >
+                    <Button
+                      variant={"primary"}
+                      type={"submit"}
+                      onClick={() =>
+                        void onSubmit({
+                          requestId: request.id,
+                          responderId: responder.id,
+                        })
+                      }
+                    >
+                      Choose
+                    </Button>
+                    {responder.reviews.length > 0 && (
+                      <Button
+                        marginInlineStart={0}
+                        marginLeft={"0px!important"}
+                        p={0}
+                        rightIcon={showReviews[index] ? <ChevronUpIcon/> : <ChevronDownIcon />}
+                        variant="ghost"
+                        onClick={() => handleToggleReviews(index)}
+                      >
+                        Show reviews
+                      </Button>
+                    )}
+                  </HStack>
+                  {showReviews[index] && responder.reviews.map((review) => (
+                    <VStack
+                      w={"full"}
+                      alignItems={"flex-start"}
+                      key={review.id}
+                      spacing={1}
+                    >
+                      <Divider w={"full"} borderBottomWidth={"3px"} />
+                      <HStack w={"full"} justifyContent={"space-between"}>
+                        <Text fontSize={"sm"} color="gray">
+                          Anonymous User
+                        </Text>
+                        <Text fontSize={"sm"} color="gray">
+                          {review.createdAt.toLocaleDateString("en-AU")}
+                        </Text>
+                      </HStack>
+                      <HStack flexDir={"row"}>
+                        <Text>{review.rating}</Text>
+                        <GiRoundStar size={"20px"} color={"#FFDB5E"} />
+                      </HStack>
+                      :
+                      <Text>{review.comment}</Text>
+                    </VStack>
+                  ))}
+                </VStack>
+              </Card>
+            ))}
+          </VStack>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
 };
 
 type MarkAsCompletePopUpProps = {
@@ -518,7 +637,10 @@ const Client = () => {
     {
       actionName: "See responders",
       icon: <AiOutlineMessage />,
-      callback: (row) => setSelectedRequest(row),
+      callback: (row) => {
+        setSelectedRequest(row);
+        setOpenResponders(true);
+      },
       shouldRender: (row) => row.status === RequestStatus.BROADCASTED,
     },
     {

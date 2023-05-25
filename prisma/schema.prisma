@@ -89,6 +89,9 @@ model Request {
     unit        Int
     price       Float
     proposals   Proposal[]
+    lat         String?
+    lng         String?
+    address     String?
 }
 
 model Proposal {
@@ -99,15 +102,16 @@ model Proposal {
     provider   User           @relation(fields: [providerId], references: [id], onDelete: Cascade)
     status     ProposalStatus @default(NEW)
     jobs       Job[]
+
     @@unique([requestId, providerId])
 }
 
 model Job {
-    id           String         @id @default(cuid())
+    id           String    @id @default(cuid())
     proposalId   String
-    proposal     Proposal       @relation(fields: [proposalId], references: [id], onDelete: Cascade)
-    status       ProposalStatus @default(NEW)
-    startedDate  DateTime       @default(now())
+    proposal     Proposal  @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+    status       JobStatus @default(NEW)
+    startedDate  DateTime  @default(now())
     finishedDate DateTime?
     review       Review[]
     payment      Payment[]

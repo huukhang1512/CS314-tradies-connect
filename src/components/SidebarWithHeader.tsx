@@ -68,8 +68,8 @@ const AdminLinkItems: LinkItemProps[] = [
 ];
 
 const TradieLinkItems: LinkItemProps[] = [
-  { name: "Available Requests", icon: HiOutlineGlobeAlt, link: "" },
-  { name: "My proposal list", icon: HiOutlineClipboardList, link: "" },
+  { name: "Available Requests", icon: HiOutlineGlobeAlt, link: "/app/tradie/requests" },
+  { name: "My proposal list", icon: HiOutlineClipboardList, link: "/app/tradie/proposals" },
   {
     name: "Subcriptions",
     icon: BiBadgeCheck,
