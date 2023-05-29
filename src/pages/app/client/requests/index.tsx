@@ -44,6 +44,7 @@ import { type CreateRatingInputType } from "@/server/api/routers/rating";
 import { CiLocationOn } from "react-icons/ci";
 import { GiRoundStar } from "react-icons/gi";
 import { PaymentReportGenerationButton } from "@/components/PaymentReportGenerationButton";
+import { PaymentPopup } from "@/components/PaymentPopup";
 
 const renderDate: React.FC<CellProps<Request, Date>> = (cell) => {
   return <>{cell.value.toLocaleString("en-AU")}</>;
@@ -116,7 +117,7 @@ const RespondersPopUp = (props: RespondersPopUpProps) => {
       setShowReviews(responders.map(() => false));
     }
   }, [responders]);
-  
+
   const handleToggleReviews = useCallback(
     (index: number) => {
       setShowReviews((prev) => {
@@ -175,16 +176,17 @@ const RespondersPopUp = (props: RespondersPopUpProps) => {
                     </VStack>
                   </HStack>
                   <HStack w={"full"} justifyContent={"space-between"}>
-                    {responder.rating !== 0 ? 
-                    <>
-                      <Text>Rating:</Text>
-                      <HStack flexDir={"row"}>
-                        <Text>{responder.rating}</Text>
-                        <GiRoundStar size={"20px"} color={"#FFDB5E"} />
-                      </HStack>
-                    </>
-                    : 
-                    <Text>No rating</Text>}
+                    {responder.rating !== 0 ? (
+                      <>
+                        <Text>Rating:</Text>
+                        <HStack flexDir={"row"}>
+                          <Text>{responder.rating}</Text>
+                          <GiRoundStar size={"20px"} color={"#FFDB5E"} />
+                        </HStack>
+                      </>
+                    ) : (
+                      <Text>No rating</Text>
+                    )}
                   </HStack>
                   <HStack
                     w={"full"}
@@ -208,7 +210,13 @@ const RespondersPopUp = (props: RespondersPopUpProps) => {
                         marginInlineStart={0}
                         marginLeft={"0px!important"}
                         p={0}
-                        rightIcon={showReviews[index] ? <ChevronUpIcon/> : <ChevronDownIcon />}
+                        rightIcon={
+                          showReviews[index] ? (
+                            <ChevronUpIcon />
+                          ) : (
+                            <ChevronDownIcon />
+                          )
+                        }
                         variant="ghost"
                         onClick={() => handleToggleReviews(index)}
                       >
@@ -216,30 +224,30 @@ const RespondersPopUp = (props: RespondersPopUpProps) => {
                       </Button>
                     )}
                   </HStack>
-                  {showReviews[index] && responder.reviews.map((review) => (
-                    <VStack
-                      w={"full"}
-                      alignItems={"flex-start"}
-                      key={review.id}
-                      spacing={1}
-                    >
-                      <Divider w={"full"} borderBottomWidth={"3px"} />
-                      <HStack w={"full"} justifyContent={"space-between"}>
-                        <Text fontSize={"sm"} color="gray">
-                          Anonymous User
-                        </Text>
-                        <Text fontSize={"sm"} color="gray">
-                          {review.createdAt.toLocaleDateString("en-AU")}
-                        </Text>
-                      </HStack>
-                      <HStack flexDir={"row"}>
-                        <Text>{review.rating}</Text>
-                        <GiRoundStar size={"20px"} color={"#FFDB5E"} />
-                      </HStack>
-                      :
-                      <Text>{review.comment}</Text>
-                    </VStack>
-                  ))}
+                  {showReviews[index] &&
+                    responder.reviews.map((review) => (
+                      <VStack
+                        w={"full"}
+                        alignItems={"flex-start"}
+                        key={review.id}
+                        spacing={1}
+                      >
+                        <Divider w={"full"} borderBottomWidth={"3px"} />
+                        <HStack w={"full"} justifyContent={"space-between"}>
+                          <Text fontSize={"sm"} color="gray">
+                            Anonymous User
+                          </Text>
+                          <Text fontSize={"sm"} color="gray">
+                            {review.createdAt.toLocaleDateString("en-AU")}
+                          </Text>
+                        </HStack>
+                        <HStack flexDir={"row"}>
+                          <Text>{review.rating}</Text>
+                          <GiRoundStar size={"20px"} color={"#FFDB5E"} />
+                        </HStack>
+                        :<Text>{review.comment}</Text>
+                      </VStack>
+                    ))}
                 </VStack>
               </Card>
             ))}
@@ -423,7 +431,7 @@ const RequestPopup = ({
   const { data: services } = api.services.getServices.useQuery();
   const { data: activeMembership } =
     api.memberships.getUserActiveMembership.useQuery();
-
+  const [isPaymentPopup, setIsPaymentPopup] = useState(false);
   const initialValues = useMemo<InputType>(() => {
     if (mode === "update" && request !== undefined) {
       return {
@@ -446,6 +454,7 @@ const RequestPopup = ({
     enableReinitialize: true,
     initialValues,
     onSubmit: async (values) => {
+      setIsPaymentPopup(false)
       await onSubmit(values);
     },
   });
@@ -470,6 +479,15 @@ const RequestPopup = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={"xl"}>
       <ModalOverlay />
+      <PaymentPopup
+        total={
+          (getServiceFromName(formik.values.serviceName)?.rate || 1) *
+          formik.values.unit
+        }
+        isOpen={isPaymentPopup}
+        onClose={() => setIsPaymentPopup(false)}
+        onSubmit={formik.submitForm}
+      />
       <ModalContent p={3}>
         <HStack alignItems={"center"} justify={"space-between"} p={3}>
           <ModalHeader whiteSpace={"nowrap"} p={0}>
@@ -567,7 +585,15 @@ const RequestPopup = ({
               {(mode === "create" ||
                 request?.status == RequestStatus.BROADCASTED ||
                 request?.status == RequestStatus.IN_PROGRESS) && (
-                <Button variant={"primary"} w={"full"} type={"submit"}>
+                <Button
+                  variant={"primary"}
+                  w={"full"}
+                  onClick={() =>
+                    hasClientMembership()
+                      ? void formik.submitForm()
+                      : setIsPaymentPopup(true)
+                  }
+                >
                   {mode === "create" ? "Submit" : "Edit"}
                 </Button>
               )}

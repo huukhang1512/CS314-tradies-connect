@@ -9,9 +9,9 @@
     "db-seed": "NODE_ENV=development prisma db seed",
     "build": "next build",
     "dev": "next dev",
-    "test": "jest",
+    "test": "env NODE_ENV=test jest --ci",
     "postinstall": "prisma generate",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && yarn test && next build",
     "lint": "next lint",
     "start": "next start"
   },
