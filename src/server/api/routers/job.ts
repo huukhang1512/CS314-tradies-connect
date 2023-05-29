@@ -97,6 +97,18 @@ export const jobRouter = createTRPCRouter({
             (job) => job.proposal.id === proposal.id
           );
 
+          const tradieMembership = await tx.userMembership.findFirst({
+            where: {
+              userId: proposal?.providerId,
+              membership: {
+                type: MembershipType.PROVIDER,
+              },
+            },
+            include: {
+              membership: true,
+            },
+          });
+
           await tx.proposal.update({
             where: {
               id: proposal?.id,
@@ -114,7 +126,9 @@ export const jobRouter = createTRPCRouter({
                         data: [
                           {
                             userId: proposal?.providerId,
-                            amount: request.price - request.price * COMMISSION,
+                            amount: tradieMembership
+                              ? request.price
+                              : request.price - request.price * COMMISSION,
                             paymentStatus: PaymentStatus.COMPLETED,
                             paymentType: PaymentType.JOB_PAYOUT,
                           },
