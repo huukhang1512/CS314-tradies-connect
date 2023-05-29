@@ -7,7 +7,7 @@
   },
   "scripts": {
     "db-seed": "NODE_ENV=development prisma db seed",
-    "build": "next build",
+    "build": "yarn test && next build",
     "dev": "next dev",
     "test": "jest",
     "postinstall": "prisma generate",
