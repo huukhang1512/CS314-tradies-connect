@@ -269,31 +269,26 @@ const Profile = () => {
                 </InputGroup>
               </FormControl>
             </GridItem>
-            {activeMemberships?.some(
-              (activeMembership) =>
-                activeMembership.membership.type === MembershipType.PROVIDER
-            ) && (
-              <GridItem>
-                <FormControl>
-                  <FormLabel>Provided Services</FormLabel>
-                  <AsyncSelect
-                    id={"providedServices"}
-                    name={"providedServices"}
-                    isMulti
-                    isReadOnly={isReadOnly}
-                    isClearable={!isReadOnly}
-                    isLoading={isGettingServiceByName}
-                    loadOptions={searchServices}
-                    onChange={handleSelectChange}
-                    value={formik.values.providedServices}
-                    defaultOptions={services.map((service) => ({
-                      label: service.name,
-                      value: service.name,
-                    }))}
-                  />
-                </FormControl>
-              </GridItem>
-            )}
+            <GridItem>
+              <FormControl>
+                <FormLabel>Provided Services</FormLabel>
+                <AsyncSelect
+                  id={"providedServices"}
+                  name={"providedServices"}
+                  isMulti
+                  isReadOnly={isReadOnly}
+                  isClearable={!isReadOnly}
+                  isLoading={isGettingServiceByName}
+                  loadOptions={searchServices}
+                  onChange={handleSelectChange}
+                  value={formik.values.providedServices}
+                  defaultOptions={services.map((service) => ({
+                    label: service.name,
+                    value: service.name,
+                  }))}
+                />
+              </FormControl>
+            </GridItem>
             {!isReadOnly && (
               <GridItem colSpan={2}>
                 <HStack justify={"end"}>
