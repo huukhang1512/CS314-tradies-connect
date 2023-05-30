@@ -32,6 +32,7 @@ export const serviceRouter = createTRPCRouter({
           name: input.name,
           rate: input.rate,
           description: input.description,
+          unit: input.unit,
         },
       });
     }),

@@ -6,6 +6,7 @@ import { type inferProcedureOutput } from "@trpc/server";
 import { createInnerTRPCContext } from "../../trpc";
 import { fakeAdminSession, fakeUser, fakeUserSession } from "@/fakes/fakeUser";
 import { SERVICES } from "@/fakes/fakeServices";
+import { prisma } from "@/server/db";
 
 const prismaMock = mockDeep<PrismaClient>();
 
@@ -112,6 +113,39 @@ test("createNewService test", async () => {
     name: "Test Service",
     rate: 123,
     unit: "unit",
+  });
+
+  expect(result).toMatchObject(mockService);
+});
+
+test("createNewService integration test", async () => {
+  type Output = inferProcedureOutput<AppRouter["services"]["createNewService"]>;
+
+  const mockService: Output = {
+    description: "Test service",
+    name: "Test Service",
+    rate: 123,
+    unit: "unit",
+  };
+
+  const caller = appRouter.createCaller(
+    createInnerTRPCContext({
+      session: fakeAdminSession,
+      prisma,
+    })
+  );
+
+  const result = await caller.services.createNewService({
+    description: "Test service",
+    name: "Test Service",
+    rate: 123,
+    unit: "unit",
+  });
+
+  await prisma.service.delete({
+    where: {
+      name: mockService.name,
+    },
   });
 
   expect(result).toMatchObject(mockService);
